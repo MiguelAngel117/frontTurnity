@@ -1,0 +1,13 @@
+/* src/styles/App.css */
+.app-container {
+    display: flex;
+  }
+  
+  .content {
+    margin-left: 250px; /* Compensa el ancho del menú lateral */
+    padding: 20px;
+    flex: 1;
+    background-color: #f4f4f9;
+    min-height: 100vh;
+  }
+  
