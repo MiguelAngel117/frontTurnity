@@ -1,13 +1,17 @@
 /* src/styles/App.css */
-.app-container {
-    display: flex;
-  }
-  
-  .content {
-    margin-left: 250px; /* Compensa el ancho del menú lateral */
-    padding: 20px;
-    flex: 1;
-    background-color: #f4f4f9;
-    min-height: 100vh;
-  }
-  
+
+.app {
+  display: flex;
+}
+
+.app-content {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #f8f9fa;
+  transition: margin-left 0.3s ease;
+  margin-left: 250px; /* Espacio reservado para el menú abierto */
+}
+
+.sidebar.closed ~ .app-content {
+  margin-left: 50px; /* Espacio reservado para el menú cerrado */
+}
