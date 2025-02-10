@@ -2,10 +2,12 @@
 
 .sidebar {
   width: 250px;
-  height: 100vh;
+  height: calc(100vh - 60px); /* Ajusta la altura para excluir el Topbar */
   background-color: #343a40;
   color: white;
   position: fixed;
+  top: 60px; /* Espacio reservado para el Topbar */
+  left: 0;
   transition: width 0.3s ease;
   overflow: hidden;
 }

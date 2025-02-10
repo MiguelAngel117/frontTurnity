@@ -9,9 +9,10 @@
   padding: 20px;
   background-color: #f8f9fa;
   transition: margin-left 0.3s ease;
-  margin-left: 250px; /* Espacio reservado para el menú abierto */
+  margin-left: 250px; /* Espacio reservado para el Sidebar abierto */
+  margin-top: 60px; /* Espacio reservado para el Topbar */
 }
 
 .sidebar.closed ~ .app-content {
-  margin-left: 50px; /* Espacio reservado para el menú cerrado */
+  margin-left: 50px; /* Espacio reservado para el Sidebar cerrado */
 }

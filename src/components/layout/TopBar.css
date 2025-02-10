@@ -1,0 +1,50 @@
+.topbar {
+    width: 100%; /* Ocupa todo el ancho */
+    height: 60px; /* Altura fija */
+    background-color: #343a40; /* Fondo del Topbar */
+    color: white; /* Color del texto */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px; /* Espaciado interno horizontal */
+    position: fixed;
+    top: 0; /* Fijo en la parte superior */
+    left: 0; /* Aseguramos que comience desde el borde izquierdo */
+    z-index: 1000; /* Aparece encima de otros elementos */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); /* Sombra para separar del contenido */
+  }
+  
+  .topbar-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .topbar-right {
+    display: flex;
+    align-items: center;
+  }
+  
+  .toggle-button {
+    background-color: #495057;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    margin-right: 10px;
+  }
+  
+  .toggle-button:hover {
+    background-color: #6c757d;
+  }
+  
+  .app-logo {
+    height: 40px;
+    width: auto;
+  }
+  
+  .profile-icon {
+    font-size: 24px;
+    cursor: pointer;
+  }
+  

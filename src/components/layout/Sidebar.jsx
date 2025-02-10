@@ -1,37 +1,30 @@
-import 
-{ useState } from 'react';
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
+import PropTypes from 'prop-types';
 
-const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(true); // Estado para el menú
-  const [turnosOpen, setTurnosOpen] = useState(false); // Estado  para subopciones de turnos
-  const [empleadosOpen, setEmpleadosOpen] = useState(false); // Estado para subopciones de empleados
+const Sidebar = ({ isOpen }) => {
+  const [expandedItems, setExpandedItems] = useState({});
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen); // Alterna el estado de apertura del menú
-  };
-
-  const toggleTurnos = () => {
-    setTurnosOpen(!turnosOpen); // Alterna las subopciones de turnos
-  };
-
-  const toggleEmpleados = () => {
-    setEmpleadosOpen(!empleadosOpen); // Alterna las subopciones de empleados
+  const toggleItem = (item) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [item]: !prev[item],
+    }));
   };
 
   return (
     <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
-      <button className="toggle-button" onClick={toggleSidebar}>
-        {isOpen ? '<' : '>'}
-      </button>
       <nav>
         <ul>
           <li className={`menu-item ${isOpen ? '' : 'hidden'}`}>
-            <span className={`menu-title ${isOpen ? '' : 'hidden'}`} onClick={toggleTurnos}>
+            <span
+              className={`menu-title ${isOpen ? '' : 'hidden'}`}
+              onClick={() => toggleItem('turnos')}
+            >
               Turnos
             </span>
-            <ul className={`submenu ${!isOpen || !turnosOpen ? 'hidden' : ''}`}>
+            <ul className={`submenu ${!expandedItems['turnos'] ? 'hidden' : ''}`}>
               <li>
                 <NavLink to="/schedules/create">Crear Turnos</NavLink>
               </li>
@@ -41,10 +34,13 @@ const Sidebar = () => {
             </ul>
           </li>
           <li className={`menu-item ${isOpen ? '' : 'hidden'}`}>
-            <span className={`menu-title ${isOpen ? '' : 'hidden'}`} onClick={toggleEmpleados}>
+            <span
+              className={`menu-title ${isOpen ? '' : 'hidden'}`}
+              onClick={() => toggleItem('empleados')}
+            >
               Empleados
             </span>
-            <ul className={`submenu ${!isOpen || !empleadosOpen ? 'hidden' : ''}`}>
+            <ul className={`submenu ${!expandedItems['empleados'] ? 'hidden' : ''}`}>
               <li>
                 <NavLink to="/employees/edit">Editar Empleados</NavLink>
               </li>
@@ -54,6 +50,10 @@ const Sidebar = () => {
       </nav>
     </div>
   );
+};
+
+Sidebar.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
 };
 
 export default Sidebar;
