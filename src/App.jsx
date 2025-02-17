@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
-import Sidebar from './components/layout/SideBar.jsx';
+import Sidebar from './components/layout/Sidebar.jsx';
 import Topbar from './components/layout/TopBar.jsx';
 import CreateSchedules from './pages/CreateShifts.jsx';
 import ReportsSchedules from './pages/ReportShifts.jsx';
 import EditEmployees from './pages/EditEmployees.jsx';
 import './styles/App.css';
-import HomePage from './pages/Homepage.jsx';
+import HomePage from './pages/HomePage.jsx';
 
 const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

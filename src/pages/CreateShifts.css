@@ -1,0 +1,78 @@
+.page {
+    max-width: 600px;
+    width: 100%;
+    margin: 0; /* Quitar el margen automático */
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    position: relative;
+    box-sizing: border-box; /* Asegura que padding se incluya en el ancho */
+  }
+  
+  /* Breadcrumb alineado a la izquierda dentro de la sección */
+  .breadcrumb {
+    position: relative; /* Cambiado a relative para mantenerlo en el flujo normal */
+    top: 0;
+    left: 0;
+    font-size: 16px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    margin-bottom: 20px; /* Espacio entre el breadcrumb y el contenido siguiente */
+    padding-left: 0; /* Asegura que empiece desde el borde izquierdo */
+    box-sizing: border-box;
+  }
+  
+  /* Estilos de los enlaces */
+  .breadcrumb-item {
+    cursor: pointer;
+    color: #007bff;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  
+  .breadcrumb-item:hover {
+    text-decoration: underline;
+  }
+  
+  /* Dropdown */
+  .dropdown {
+    position: relative;
+    width: 100%;
+    margin-top: 10px; /* Reducido ya que el breadcrumb está en el flujo normal */
+  }
+  
+  .dropdown input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: none;
+    box-sizing: border-box;
+  }
+  
+  .dropdown input:focus + .dropdown-menu,
+  .dropdown-menu:hover {
+    display: block;
+  }
+  
+  .dropdown-item {
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .dropdown-item:hover {
+    background: #f0f0f0;
+  }
