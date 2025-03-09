@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import "./CreateShifts.css";
 import Breadcrumb from "../components/buttons/Breadcrumb";
 import Dropdown from "../components/buttons/Dropdown";
+import EmployeeList from "../components/buttons/EmployeeList";
+import ShiftMatrix from "../components/templates/ShiftMatrix"; // Importamos el nuevo componente
 
 const CreateShifts = () => {
   const [stores, setStores] = useState([]);
@@ -10,6 +12,11 @@ const CreateShifts = () => {
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [showStoresDropdown, setShowStoresDropdown] = useState(false);
   const [showDepartmentsDropdown, setShowDepartmentsDropdown] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showMatrix, setShowMatrix] = useState(false);
+  const [selectedEmployeesData, setSelectedEmployeesData] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost:3000/turnity/stores")
@@ -21,7 +28,10 @@ const CreateShifts = () => {
   const handleStoreSelect = (store) => {
     setSelectedStore(store);
     setSelectedDepartment(null);
+    setEmployees([]);
+    setSelectedEmployees([]);
     setShowStoresDropdown(false);
+    setShowMatrix(false);
 
     fetch(`http://localhost:3000/turnity/departmentStore/store/${store.id_store}`)
       .then((res) => res.json())
@@ -32,6 +42,46 @@ const CreateShifts = () => {
   const handleDepartmentSelect = (department) => {
     setSelectedDepartment(department);
     setShowDepartmentsDropdown(false);
+    setShowMatrix(false);
+    
+    if (selectedStore && department) {
+      setLoading(true);
+      fetch(`http://localhost:3000/turnity/employeeDep/Store/${selectedStore.id_store}/department/${department.id_department}`)
+        .then((res) => res.json())
+        .then((data) => {
+          // Convertir number_document a string para evitar problemas con PropTypes
+          const formattedData = data.map(emp => ({
+            ...emp,
+            number_document: String(emp.number_document)
+          }));
+          setEmployees(formattedData);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching employees:", error);
+          setLoading(false);
+        });
+    }
+  };
+
+  // Manejar la selección de empleados
+  const handleEmployeeSelect = (selectedEmployeeIds) => {
+    setSelectedEmployees(selectedEmployeeIds);
+  };
+
+  // Manejar el botón de continuar
+  const handleContinue = () => {
+    // Filtrar los empleados seleccionados para obtener sus datos completos
+    const employeesData = employees.filter(emp => 
+      selectedEmployees.includes(emp.number_document)
+    );
+    setSelectedEmployeesData(employeesData);
+    setShowMatrix(true);
+  };
+
+  // Manejar el botón para volver a la selección de empleados
+  const handleBackToSelection = () => {
+    setShowMatrix(false);
   };
 
   // Preparar los items para el Breadcrumb
@@ -58,6 +108,8 @@ const CreateShifts = () => {
     } else if (index === 1 && selectedStore) {
       // Clic en Departamento
       setShowDepartmentsDropdown(true);
+    } else if (index === 2 && showMatrix) {
+      // No hacer nada, ya estamos en la matriz
     }
   };
 
@@ -82,25 +134,49 @@ const CreateShifts = () => {
         onItemClick={handleBreadcrumbClick}
       />
 
-      {/* Contenido de la página */}
-      <div className="page-content">
-        {selectedStore && selectedDepartment ? (
-          <div className="shifts-container">
-            {/* Aquí iría el contenido para crear turnos */}
-            <h2>Crear Turnos</h2>
-            <p>Tienda: {selectedStore.name_store}</p>
-            <p>Departamento: {selectedDepartment.name_department}</p>
-            {/* Resto del formulario para crear turnos */}
+      {/* Mensajes de selección */}
+      {(!selectedStore || !selectedDepartment) && !showMatrix && (
+        <div className="selection-prompt">
+          {!selectedStore ? 
+            <p>Por favor selecciona una tienda</p> : 
+            <p>Por favor selecciona un departamento</p>
+          }
+        </div>
+      )}
+
+      {/* Mostrar EmployeeList o ShiftMatrix según el estado */}
+      {selectedStore && selectedDepartment && !showMatrix && (
+        <div className="shifts-container">
+          <h2>Crear Turnos</h2>
+          {loading ? (
+            <p className="loading-message">Cargando empleados...</p>
+          ) : (
+            <EmployeeList 
+              employees={employees} 
+              onEmployeeSelect={handleEmployeeSelect}
+              onContinue={handleContinue}
+              selectedEmployees={selectedEmployees}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Mostrar la matriz de turnos cuando se presiona Continuar */}
+      {showMatrix && (
+        <div className="matrix-container">
+          <div className="matrix-actions">
+            <button 
+              className="back-button" 
+              onClick={handleBackToSelection}
+            >
+              ← Volver a selección
+            </button>
           </div>
-        ) : (
-          <div className="selection-prompt">
-            {!selectedStore ? 
-              <p>Selecciona una tienda para continuar</p> : 
-              <p>Selecciona un departamento para continuar</p>
-            }
-          </div>
-        )}
-      </div>
+          <ShiftMatrix 
+            employees={selectedEmployeesData}
+          />
+        </div>
+      )}
 
       {/* Dropdowns flotantes */}
       <Dropdown

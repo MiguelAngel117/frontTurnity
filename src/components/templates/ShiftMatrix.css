@@ -1,0 +1,189 @@
+.shift-matrix-container {
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.month-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.month-nav-button {
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.month-nav-button:hover {
+  background-color: #303f9f;
+}
+
+.current-month {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.week-selector {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.week-button {
+  background-color: #e0e0e0;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.week-button:hover {
+  background-color: #bdbdbd;
+}
+
+.week-button.selected {
+  background-color: #3f51b5;
+  color: white;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.shift-matrix-grid {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: white;
+}
+
+.shift-matrix-row {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+}
+
+.shift-matrix-row:last-child {
+  border-bottom: none;
+}
+
+.header-row {
+  background-color: #f0f0f0;
+  font-weight: 500;
+}
+
+.employee-info-cell {
+  width: 200px;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+.employee-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.employee-document, .employee-hours {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.day-cell {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.day-cell:last-child {
+  border-right: none;
+}
+
+.day-number {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.day-name {
+  font-size: 0.85rem;
+  color: #666;
+  text-transform: capitalize;
+}
+
+.shift-cell {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.shift-cell:last-child {
+  border-right: none;
+}
+
+.shift-cell:hover {
+  background-color: #f5f5f5;
+}
+
+.shift-status {
+  display: block;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: #eee;
+  font-size: 0.85rem;
+}
+
+/* Estilos para turnos asignados */
+.shift-cell.assigned-shift {
+  background-color: #e3f2fd;
+}
+
+.shift-cell.assigned-shift .shift-status {
+  background-color: #bbdefb;
+  color: #1565c0;
+}
+
+/* Estilos para turnos especiales */
+.shift-cell.special-shift {
+  background-color: #fff8e1;
+}
+
+.shift-cell.special-shift .shift-status {
+  background-color: #ffecb3;
+  color: #ff8f00;
+}
+
+/* Estilos para selección activa */
+.shift-cell.active {
+  background-color: #e8f5e9;
+}
+
+@media (max-width: 768px) {
+  .employee-info-cell {
+    width: 150px;
+  }
+  
+  .day-cell, .shift-cell {
+    min-width: 60px;
+  }
+}

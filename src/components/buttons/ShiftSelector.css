@@ -1,0 +1,135 @@
+.shift-selector-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .shift-selector-modal {
+    background-color: white;
+    border-radius: 8px;
+    padding: 24px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .shift-selector-modal h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    color: #333;
+  }
+  
+  .date-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+  
+  .date-info p {
+    margin: 5px 0;
+    color: #666;
+  }
+  
+  .date-info span {
+    color: #cc3333;
+    font-weight: 500;
+  }
+  
+  .selector-section {
+    margin-bottom: 16px;
+  }
+  
+  .selector-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+    text-align: center;
+  }
+  
+  .selector-section select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    font-size: 0.9rem;
+    color: #333;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 9L0 3h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    cursor: pointer;
+  }
+  
+  .selector-section select:disabled {
+    background-color: #eee;
+    cursor: not-allowed;
+  }
+  
+  .action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+  }
+  
+  .action-buttons button {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin: 0 5px;
+  }
+  
+  .action-buttons button:first-child {
+    margin-left: 0;
+  }
+  
+  .action-buttons button:last-child {
+    margin-right: 0;
+  }
+  
+  .cancel-button {
+    background-color: #3f51b5;
+    color: white;
+  }
+  
+  .delete-button {
+    background-color: #e53935;
+    color: white;
+  }
+  
+  .save-button {
+    background-color: #43a047;
+    color: white;
+  }
+  
+  .cancel-button:hover {
+    background-color: #303f9f;
+  }
+  
+  .delete-button:hover {
+    background-color: #c62828;
+  }
+  
+  .save-button:hover {
+    background-color: #388e3c;
+  }
+  
+  .save-button:disabled {
+    background-color: #a5d6a7;
+    cursor: not-allowed;
+  }
