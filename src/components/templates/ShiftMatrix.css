@@ -65,7 +65,15 @@
   font-style: italic;
 }
 
+.shift-matrix {
+  position: relative;
+  max-height: 600px;
+  overflow: hidden;
+}
+
 .shift-matrix-grid {
+  display: flex;
+  flex-direction: column;
   border: 1px solid #ddd;
   border-radius: 4px;
   overflow: hidden;
@@ -84,6 +92,14 @@
 .header-row {
   background-color: #f0f0f0;
   font-weight: 500;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.scrollable-body {
+  max-height: 560px;
+  overflow-y: auto;
 }
 
 .employee-info-cell {
@@ -176,6 +192,55 @@
 /* Estilos para selección activa */
 .shift-cell.active {
   background-color: #e8f5e9;
+}
+
+/* Estilos para el botón de crear turnos */
+.create-shifts-section {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.create-shifts-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.create-shifts-button:hover {
+  background-color: #388e3c;
+}
+
+.create-shifts-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.success-message {
+  color: #388e3c;
+  background-color: #e8f5e9;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  width: 100%;
+  text-align: center;
+}
+
+.error-message {
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  width: 100%;
+  text-align: center;
 }
 
 @media (max-width: 768px) {

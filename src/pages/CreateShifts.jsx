@@ -164,16 +164,23 @@ const CreateShifts = () => {
       {/* Mostrar la matriz de turnos cuando se presiona Continuar */}
       {showMatrix && (
         <div className="matrix-container">
-          <div className="matrix-actions">
+          <div className="matrix-header">
             <button 
               className="back-button" 
               onClick={handleBackToSelection}
             >
               ← Volver a selección
             </button>
+            <div className="selected-info">
+              <span className="store-info">{selectedStore?.name_store}</span>
+              {" > "}
+              <span className="department-info">{selectedDepartment?.name_department}</span>
+            </div>
           </div>
           <ShiftMatrix 
             employees={selectedEmployeesData}
+            selectedStore={selectedStore}
+            selectedDepartment={selectedDepartment}
           />
         </div>
       )}
@@ -199,4 +206,4 @@ const CreateShifts = () => {
   );
 };
 
-export default CreateShifts;
+export default CreateShifts;  
