@@ -131,6 +131,7 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
                     hour: shift.hours.toString(),
                     shift: {
                       id: shift.turn,
+                      code_shift: shift.turn,
                       initial_hour: shift.initial_hour,
                       break: shift.break
                     },
