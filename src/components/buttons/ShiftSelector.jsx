@@ -24,7 +24,7 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
         setSelectedHour(existingShift.hour || "");
         
         // Si no es un turno especial y el turno existe, cargar los detalles del turno
-        const specialOptions = ["DESCANSO - X", "CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"];
+        const specialOptions = ["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"];
         if (existingShift.hour && !specialOptions.includes(existingShift.hour) && existingShift.shift) {
           setSelectedShift(existingShift.shift);
           setSelectedBreak(existingShift.break || "");
@@ -100,7 +100,7 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
     setSelectedBreak("");
     
     // Si es una opción especial como DESCANSO, no cargar turnos
-    const specialOptions = ["DESCANSO - X", "CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"];
+    const specialOptions = ["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"];
     
     if (!hour || specialOptions.includes(hour)) {
       setShifts([]);
@@ -276,7 +276,7 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
           <button 
             className="save-button" 
             onClick={handleSave}
-            disabled={!selectedHour || (selectedHour && !["DESCANSO - X", "CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(selectedHour) && !selectedShift)}
+            disabled={!selectedHour || (selectedHour && !["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(selectedHour) && !selectedShift)}
           >
             {isEditing ? "Actualizar" : "Crear"}
           </button>

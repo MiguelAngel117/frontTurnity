@@ -102,7 +102,10 @@ const EmployeeList = ({ employees, onEmployeeSelect, onContinue, selectedEmploye
                     {employee.name_position}
                   </div>
                   <div className="employee-status">
-                    <div className="status-circle red" title="Sin malla asignada"></div>
+                    <div 
+                      className={`status-circle ${employee.has_shifts ? "green" : "red"}`} 
+                      title={employee.has_shifts ? "Con malla asignada" : "Sin malla asignada"}>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -130,6 +133,7 @@ EmployeeList.propTypes = {
     full_name: PropTypes.string.isRequired,
     working_day: PropTypes.number.isRequired,
     name_position: PropTypes.string.isRequired,
+    has_shifts: PropTypes.bool
   })).isRequired,
   onEmployeeSelect: PropTypes.func.isRequired,
   onContinue: PropTypes.func.isRequired,

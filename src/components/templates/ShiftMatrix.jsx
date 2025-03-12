@@ -300,24 +300,35 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
 
     // Obtenemos los empleados a procesar (desde los datos cargados o los props originales)
     const employeesToProcess = employeeShiftsData.length > 0 
-      ? employeeShiftsData.map(empData => ({
-          number_document: empData.employee.number_document,
-          working_day: empData.employee.working_day
-        }))
-      : employees;
+      ? employeeShiftsData
+      : employees.map(emp => ({
+          employee: {
+            number_document: emp.number_document,
+            working_day: emp.working_day
+          },
+          weeklyShifts: []
+        }));
 
     // Organizamos los datos por empleado
     const employeesWithShifts = [];
 
-    employeesToProcess.forEach(employee => {
+    employeesToProcess.forEach(employeeData => {
+      const employee = employeeData.employee;
       const employeeShifts = [];
       const weeklyShiftMap = {};
 
       // Inicializamos la estructura de semanas
       weeks.forEach((week, weekIndex) => {
-        weeklyShiftMap[weekIndex + 1] = {
-          week: weekIndex + 1,
-          working_day: employee.working_day,
+        // Buscamos si hay información específica para esta semana en los datos cargados
+        const weekNumber = weekIndex + 1;
+        const weekInfo = employeeData.weeklyShifts && employeeData.weeklyShifts.find(w => w.week === weekNumber);
+        
+        // Usamos la jornada específica de la semana si existe, de lo contrario la general
+        const workingDay = weekInfo ? weekInfo.working_day : employee.working_day;
+        
+        weeklyShiftMap[weekNumber] = {
+          week: weekNumber,
+          working_day: workingDay, // Usamos la jornada específica de la semana
           shifts: []
         };
       });
@@ -459,7 +470,9 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
         number_document: empData.employee.number_document,
         full_name: empData.employee.name,  // Usar el name que viene de la API
         working_day: empData.employee.working_day,
-        position: empData.employee.position  // Usar el position que viene de la API
+        position: empData.employee.position,  // Usar el position que viene de la API
+        // Agregamos la información semanal para usar después
+        weeklyShifts: empData.weeklyShifts
       }));
     }
     // Si no, usamos los datos de los props
@@ -519,34 +532,43 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
               </div>
 
               <div className="scrollable-body">
-                {/* Filas de empleados - CORREGIDO para mostrar correctamente los datos de la API */}
-                {displayEmployees.map((employee) => (
-                  <div key={employee.number_document} className="shift-matrix-row">
-                    <div className="employee-info-cell">
-                      <div className="employee-name">{employee.full_name || employee.name}</div>
-                      <div className="employee-document">ID: {employee.number_document}</div>
-                      <div className="employee-hours">{employee.working_day} hrs</div>
-                      <div className="employee-position">{employee.position}</div>
-                    </div>
-                    
-                    {/* Celdas para cada día */}
-                    {weekDays.map((day, dayIndex) => {
-                      const shiftInfo = getAssignedShiftInfo(employee.number_document, day);
+                {/* Filas de empleados */}
+                {displayEmployees.map((employee) => {
+                  // Obtener la jornada de la semana actual
+                  const currentWeekData = employee.weeklyShifts ? 
+                    employee.weeklyShifts.find(week => week.week === selectedWeekIndex + 1) : null;
+                  
+                  // Usar la jornada semanal si está disponible, sino usar la general
+                  const weeklyWorkingDay = currentWeekData ? currentWeekData.working_day : employee.working_day;
+                  
+                  return (
+                    <div key={employee.number_document} className="shift-matrix-row">
+                      <div className="employee-info-cell">
+                        <div className="employee-name">{employee.full_name || employee.name}</div>
+                        <div className="employee-document">ID: {employee.number_document}</div>
+                        <div className="employee-hours">{weeklyWorkingDay} hrs</div>
+                        <div className="employee-position">{employee.position}</div>
+                      </div>
                       
-                      return (
-                        <div 
-                          key={dayIndex} 
-                          className={`shift-cell ${shiftInfo ? shiftInfo.className : ''}`}
-                          onClick={() => handleShiftCellClick(employee.number_document, day, employee)}
-                        >
-                          <span className="shift-status">
-                            {shiftInfo ? shiftInfo.label : "Libre"}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
+                      {/* Celdas para cada día */}
+                      {weekDays.map((day, dayIndex) => {
+                        const shiftInfo = getAssignedShiftInfo(employee.number_document, day);
+                        
+                        return (
+                          <div 
+                            key={dayIndex} 
+                            className={`shift-cell ${shiftInfo ? shiftInfo.className : ''}`}
+                            onClick={() => handleShiftCellClick(employee.number_document, day, employee)}
+                          >
+                            <span className="shift-status">
+                              {shiftInfo ? shiftInfo.label : "Libre"}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
