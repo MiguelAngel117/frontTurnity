@@ -20,33 +20,47 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
       // Verificar si estamos editando un turno existente
       if (existingShift) {
         setIsEditing(true);
-        setSelectedHour(existingShift.hour);
+        // Asegurar que existingShift.hour tiene un valor válido
+        setSelectedHour(existingShift.hour || "");
         
-        // Si no es un turno especial, cargar los detalles del turno
+        // Si no es un turno especial y el turno existe, cargar los detalles del turno
         const specialOptions = ["DESCANSO - X", "CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"];
-        if (!specialOptions.includes(existingShift.hour) && existingShift.shift) {
+        if (existingShift.hour && !specialOptions.includes(existingShift.hour) && existingShift.shift) {
           setSelectedShift(existingShift.shift);
           setSelectedBreak(existingShift.break || "");
           
           // Cargar los turnos para esta hora
           fetch(`http://localhost:3000/turnity/shifts/by-hours/${existingShift.hour}`)
-            .then(res => res.json())
+            .then(res => {
+              if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+              }
+              return res.json();
+            })
             .then(data => {
-              setShifts(data);
+              setShifts(Array.isArray(data) ? data : []);
               
               // Si el turno tiene descanso, cargar los descansos
-              if (existingShift.shift) {
+              if (existingShift.shift && existingShift.shift.code_shift) {
                 return fetch(`http://localhost:3000/turnity/shifts/breaks/${existingShift.shift.code_shift}`);
               }
+              return null;
             })
-            .then(res => res && res.json())
+            .then(res => {
+              if (res && !res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+              }
+              return res ? res.json() : null;
+            })
             .then(data => {
               if (data) {
-                setBreaks(data.breaks || []);
+                setBreaks(Array.isArray(data.breaks) ? data.breaks : []);
               }
             })
             .catch(error => {
               console.error("Error fetching existing shift details:", error);
+              setShifts([]);
+              setBreaks([]);
             });
         }
       } else {
@@ -55,17 +69,25 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
         setSelectedHour("");
         setSelectedShift(null);
         setSelectedBreak("");
+        setShifts([]);
+        setBreaks([]);
       }
       
       // Cargar las horas disponibles
       fetch("http://localhost:3000/turnity/shifts/list/")
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
         .then(data => {
-          setHours(data);
+          setHours(Array.isArray(data) ? data : []);
           setLoading(false);
         })
         .catch(error => {
           console.error("Error fetching hours:", error);
+          setHours([]);
           setLoading(false);
         });
     }
@@ -80,20 +102,26 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
     // Si es una opción especial como DESCANSO, no cargar turnos
     const specialOptions = ["DESCANSO - X", "CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"];
     
-    if (specialOptions.includes(hour)) {
+    if (!hour || specialOptions.includes(hour)) {
       setShifts([]);
       return;
     }
     
     setLoading(true);
     fetch(`http://localhost:3000/turnity/shifts/by-hours/${hour}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
-        setShifts(data);
+        setShifts(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(error => {
         console.error("Error fetching shifts:", error);
+        setShifts([]);
         setLoading(false);
       });
   };
@@ -103,13 +131,21 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
     setSelectedShift(shift);
     setSelectedBreak("");
     
-    if (!shift) return;
+    if (!shift || !shift.code_shift) {
+      setBreaks([]);
+      return;
+    }
     
     setLoading(true);
     fetch(`http://localhost:3000/turnity/shifts/breaks/${shift.code_shift}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
-        setBreaks(data.breaks || []);
+        setBreaks(Array.isArray(data.breaks) ? data.breaks : []);
         setLoading(false);
       })
       .catch(error => {
@@ -178,13 +214,13 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
             disabled={loading}
           >
             <option value="">Seleccionar hora</option>
-            {hours.map((hour, index) => (
+            {Array.isArray(hours) && hours.map((hour, index) => (
               <option key={index} value={hour}>{hour}</option>
             ))}
           </select>
         </div>
 
-        {selectedHour && !["DESCANSO - X", "CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(selectedHour) && (
+        {selectedHour && !["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(selectedHour) && (
           <div className="selector-section">
             <label>Turnos</label>
             <select 
@@ -193,10 +229,10 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
                 const shift = shifts.find(s => s.code_shift === e.target.value);
                 handleShiftSelect(shift);
               }}
-              disabled={loading || shifts.length === 0}
+              disabled={loading || !Array.isArray(shifts) || shifts.length === 0}
             >
               <option value="">Seleccionar turno</option>
-              {shifts.map((shift) => {
+              {Array.isArray(shifts) && shifts.map((shift) => {
                 const endHour = calculateEndHour(shift.initial_hour, shift.hours);
                 return (
                   <option key={shift.code_shift} value={shift.code_shift}>
@@ -214,10 +250,10 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
             <select 
               value={selectedBreak} 
               onChange={(e) => setSelectedBreak(e.target.value)}
-              disabled={loading || breaks.length === 0}
+              disabled={loading || !Array.isArray(breaks) || breaks.length === 0}
             >
               <option value="">Seleccionar descanso</option>
-              {breaks.map((breakTime, index) => (
+              {Array.isArray(breaks) && breaks.map((breakTime, index) => (
                 <option key={index} value={breakTime}>{breakTime}</option>
               ))}
             </select>
@@ -252,6 +288,8 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
 
 // Función auxiliar para calcular la hora de finalización
 function calculateEndHour(startTime, hours) {
+  if (!startTime || !hours) return "00:00";
+  
   const [hours24, minutes] = startTime.split(':');
   const startDate = new Date();
   startDate.setHours(parseInt(hours24), parseInt(minutes), 0);
@@ -268,7 +306,7 @@ ShiftSelector.propTypes = {
   onSave: PropTypes.func.isRequired,
   date: PropTypes.instanceOf(Date),
   employeeData: PropTypes.shape({
-    number_document: PropTypes.string.isRequired,
+    number_document: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     full_name: PropTypes.string.isRequired
   }),
   existingShift: PropTypes.object

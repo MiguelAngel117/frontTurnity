@@ -22,6 +22,10 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
   const [creatingShifts, setCreatingShifts] = useState(false);
   const [createSuccess, setCreateSuccess] = useState(false);
   const [createError, setCreateError] = useState(null);
+  // Estado para almacenar los datos de turnos existentes
+  const [employeeShiftsData, setEmployeeShiftsData] = useState([]);
+  // Estado para indicar si estamos cargando los turnos existentes
+  const [loadingExistingShifts, setLoadingExistingShifts] = useState(false);
 
   // Ref para el scrolling
   const matrixRef = useRef(null);
@@ -51,6 +55,9 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
         console.log("Weeks loaded:", result.data.weeks.weeks);
         setWeeks(result.data.weeks.weeks);
         setSelectedWeekIndex(0); // Seleccionar la primera semana por defecto
+        
+        // Una vez cargadas las semanas, cargar los turnos existentes
+        loadExistingShifts(result.data.weeks.weeks);
       } else {
         console.error("Error loading weeks:", result.message);
       }
@@ -58,6 +65,91 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
       console.error("Error fetching weeks:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Función para cargar los turnos existentes
+  const loadExistingShifts = async (weeksData) => {
+    if (!employees || employees.length === 0 || !weeksData || weeksData.length === 0) {
+      return;
+    }
+
+    setLoadingExistingShifts(true);
+    
+    try {
+      // Obtener las fechas de inicio y fin basadas en las semanas
+      const startDate = weeksData[0].start;
+      const endDate = weeksData[weeksData.length - 1].end;
+      
+      // Preparar el array de IDs de empleados
+      const employeeIds = employees.map(emp => emp.number_document);
+      
+      // CORRECCIÓN: Usar POST en lugar de GET y pasar los datos en el body
+      const response = await fetch('http://localhost:3000/turnity/employeeshift/by-employee-list/', {
+        method: 'POST',  // Cambiado de GET a POST
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          employees: employeeIds,
+          startDate: startDate,
+          endDate: endDate,
+          numWeeks: weeksData.length
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.employeeShifts) {
+        console.log("Existing shifts loaded:", result.employeeShifts);
+        setEmployeeShiftsData(result.employeeShifts);
+        
+        // Procesar los turnos y agregarlos al estado assignedShifts
+        const shiftsMap = {};
+        
+        result.employeeShifts.forEach(employeeData => {
+          const employeeId = employeeData.employee.number_document;
+          
+          employeeData.weeklyShifts.forEach(weekData => {
+            if (weekData.shifts && Array.isArray(weekData.shifts)) {
+              weekData.shifts.forEach(shift => {
+                const key = `${employeeId}_${shift.shift_date}`;
+                
+                // Determinar el tipo de turno (especial o normal)
+                if (["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(shift.turn)) {
+                  shiftsMap[key] = {
+                    employeeId: employeeId,
+                    date: new Date(shift.shift_date),
+                    hour: shift.turn,
+                    deleted: false
+                  };
+                } else {
+                  // Para turnos normales
+                  shiftsMap[key] = {
+                    employeeId: employeeId,
+                    date: new Date(shift.shift_date),
+                    hour: shift.hours.toString(),
+                    shift: {
+                      id: shift.turn,
+                      initial_hour: shift.initial_hour,
+                      break: shift.break
+                    },
+                    deleted: false
+                  };
+                }
+              });
+            }
+          });
+        });
+        
+        setAssignedShifts(shiftsMap);
+      } else {
+        console.error("Error loading existing shifts:", result.message || "No data received");
+      }
+    } catch (error) {
+      console.error("Error fetching existing shifts:", error);
+    } finally {
+      setLoadingExistingShifts(false);
     }
   };
 
@@ -153,8 +245,13 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
     
     if (!shift) return null;
     
+    // Si el turno es "X" (descanso), retornar null para que se muestre como "Libre"
+    if (shift.shift && shift.shift.id === "X") {
+      return null;
+    }
+    
     // Determinar qué mostrar basado en el tipo de turno
-    if (["DESCANSO - X", "CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(shift.hour)) {
+    if (["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(shift.hour)) {
       return {
         label: shift.hour,
         className: "special-shift"
@@ -175,7 +272,15 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
   const getExistingShift = (employeeId, date) => {
     if (!date) return null;
     const key = `${employeeId}_${formatDateForAPI(date)}`;
-    return assignedShifts[key] || null;
+    const shift = assignedShifts[key];
+    
+    // Si no hay turno asignado o el turno está marcado como "X" (descanso/libre),
+    // devolver null para que se comporte como una celda nueva
+    if (!shift || (shift.shift && shift.shift.id === "X")) {
+      return null;
+    }
+    
+    return shift;
   };
 
   // Función para preparar los datos para el backend
@@ -193,10 +298,18 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
     const lastWeekEnd = new Date(weeks[weeks.length - 1].end + "T00:00:00");
     const numWeeks = weeks.length;
 
+    // Obtenemos los empleados a procesar (desde los datos cargados o los props originales)
+    const employeesToProcess = employeeShiftsData.length > 0 
+      ? employeeShiftsData.map(empData => ({
+          number_document: empData.employee.number_document,
+          working_day: empData.employee.working_day
+        }))
+      : employees;
+
     // Organizamos los datos por empleado
     const employeesWithShifts = [];
 
-    employees.forEach(employee => {
+    employeesToProcess.forEach(employee => {
       const employeeShifts = [];
       const weeklyShiftMap = {};
 
@@ -242,16 +355,16 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
         
         // Si hay un turno asignado, lo usamos
         if (assignedShift) {
-          if (["DESCANSO - X", "CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(assignedShift.hour)) {
+          if (["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(assignedShift.hour)) {
             // Para turnos especiales usamos el valor del hour como turn
             shiftData = {
               shift_date: dateStr,
-              turn: assignedShift.hour === "DESCANSO - X" ? "X" : assignedShift.hour,
+              turn: assignedShift.hour,
               hours: 0,
               break: "01:00:00",
               initial_hour: "00:00:00"
             };
-          } else if (assignedShift.shift) {
+          } else if (assignedShift.shift && assignedShift.shift.id !== "X" ) {
             // Para turnos normales
             shiftData = {
               shift_date: dateStr,
@@ -291,8 +404,6 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
       data: {
         storeId: selectedStore.id_store,
         departmentId: selectedDepartment.id_department,
-        positionId: employees[0]?.id_position || 0, // Asumimos que todos los empleados tienen la misma posición
-        startDate: formatDateForAPI(firstWeekStart),
         numWeeks: numWeeks,
         employeeShifts: employeesWithShifts
       }
@@ -340,7 +451,23 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
     }
   };
 
+  // Obtener los datos de los empleados a mostrar
+  const getEmployeesData = () => {
+    // Si tenemos datos cargados de la API, usamos esos
+    if (employeeShiftsData.length > 0) {
+      return employeeShiftsData.map(empData => ({
+        number_document: empData.employee.number_document,
+        full_name: empData.employee.name,  // Usar el name que viene de la API
+        working_day: empData.employee.working_day,
+        position: empData.employee.position  // Usar el position que viene de la API
+      }));
+    }
+    // Si no, usamos los datos de los props
+    return employees;
+  };
+
   const weekDays = getWeekDays();
+  const displayEmployees = getEmployeesData();
 
   return (
     <div className="shift-matrix-container">
@@ -354,25 +481,27 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
         </button>
       </div>
 
-      {loading ? (
-        <div className="loading-indicator">Cargando semanas...</div>
+      {loading || loadingExistingShifts ? (
+        <div className="loading-indicator">
+          {loading ? "Cargando semanas..." : "Cargando turnos existentes..."}
+        </div>
       ) : (
         <>
           <div className="week-selector">
             {weeks.map((week, index) => {
-            // Extraer el día de la fecha en formato YYYY-MM-DD (los últimos dos caracteres)
-            const formattedStart = week.start.substring(8, 10); // Día de inicio
-            const formattedEnd = week.end.substring(8, 10); // Día de fin
+              // Extraer el día de la fecha en formato YYYY-MM-DD (los últimos dos caracteres)
+              const formattedStart = week.start.substring(8, 10); // Día de inicio
+              const formattedEnd = week.end.substring(8, 10); // Día de fin
 
-            return (
+              return (
                 <button 
-                key={index}
-                onClick={() => setSelectedWeekIndex(index)}
-                className={`week-button ${selectedWeekIndex === index ? 'selected' : ''}`}
+                  key={index}
+                  onClick={() => setSelectedWeekIndex(index)}
+                  className={`week-button ${selectedWeekIndex === index ? 'selected' : ''}`}
                 >
-                {formattedStart} - {formattedEnd}
+                  {formattedStart} - {formattedEnd}
                 </button>
-            );
+              );
             })}
           </div>
 
@@ -384,19 +513,20 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
                 {weekDays.map((day, index) => (
                   <div key={index} className="day-cell">
                     <div className="day-number">{day.getDate()}</div>
-                    <div className="day-name">{day.toLocaleString('es-ES', { weekday: 'short' })}</div>
+                    <div className="day-name">{day.toLocaleString('es-ES', { weekday: 'long' })}</div>
                   </div>
                 ))}
               </div>
 
               <div className="scrollable-body">
-                {/* Filas de empleados */}
-                {employees.map((employee) => (
+                {/* Filas de empleados - CORREGIDO para mostrar correctamente los datos de la API */}
+                {displayEmployees.map((employee) => (
                   <div key={employee.number_document} className="shift-matrix-row">
                     <div className="employee-info-cell">
-                      <div className="employee-name">{employee.full_name}</div>
+                      <div className="employee-name">{employee.full_name || employee.name}</div>
                       <div className="employee-document">ID: {employee.number_document}</div>
                       <div className="employee-hours">{employee.working_day} hrs</div>
+                      <div className="employee-position">{employee.position}</div>
                     </div>
                     
                     {/* Celdas para cada día */}
@@ -464,10 +594,12 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
 
 ShiftMatrix.propTypes = {
   employees: PropTypes.arrayOf(PropTypes.shape({
-    number_document: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    full_name: PropTypes.string.isRequired,
+    number_document: PropTypes.oneOfType([PropTypes.string]).isRequired,
+    full_name: PropTypes.string,
+    name: PropTypes.string,
     working_day: PropTypes.number.isRequired,
     name_position: PropTypes.string,
+    position: PropTypes.string,
     id_position: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   })).isRequired,
   selectedStore: PropTypes.shape({
