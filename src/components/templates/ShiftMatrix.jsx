@@ -280,6 +280,14 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
       return null;
     }
     
+    // Asegurarse de incluir correctamente la información del descanso
+    if (shift.shift && shift.shift.break) {
+      return {
+        ...shift,
+        break: shift.shift.break  // Asegurarse de que el break está disponible en el nivel superior
+      };
+    }
+    
     return shift;
   };
 
@@ -367,22 +375,32 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
         // Si hay un turno asignado, lo usamos
         if (assignedShift) {
           if (["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(assignedShift.hour)) {
-            // Para turnos especiales usamos el valor del hour como turn
+            // Para turnos especiales
+            // Determinar las horas según la jornada del empleado
+            let hoursValue = 0;
+            if (employee.working_day === 36) {
+              hoursValue = 6;
+            } else {
+              hoursValue = 8; // Para jornadas de 46, 24, y 16 horas
+            }
+            
             shiftData = {
               shift_date: dateStr,
               turn: assignedShift.hour,
-              hours: 0,
+              hours: hoursValue,
               break: "01:00:00",
-              initial_hour: "00:00:00"
+              initial_hour: "00:00:00",
+              end_hour: "00:00:00"
             };
           } else if (assignedShift.shift && assignedShift.shift.id !== "X" ) {
             // Para turnos normales
             shiftData = {
               shift_date: dateStr,
-              turn: assignedShift.shift.id,
+              turn: assignedShift.shift.code_shift || assignedShift.shift.id, // Usar code_shift si está disponible
               hours: parseInt(assignedShift.hour) || 0,
               break: assignedShift.shift.break || "01:00:00",
-              initial_hour: assignedShift.shift.initial_hour || "00:00:00"
+              initial_hour: assignedShift.shift.initial_hour || "00:00:00",
+              end_hour: assignedShift.shift.end_hour || "00:00:00"
             };
           }
         }

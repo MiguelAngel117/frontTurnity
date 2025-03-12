@@ -171,11 +171,6 @@ const CreateShifts = () => {
             >
               ← Volver a selección
             </button>
-            <div className="selected-info">
-              <span className="store-info">{selectedStore?.name_store}</span>
-              {" > "}
-              <span className="department-info">{selectedDepartment?.name_department}</span>
-            </div>
           </div>
           <ShiftMatrix 
             employees={selectedEmployeesData}

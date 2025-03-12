@@ -22,13 +22,12 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
         setIsEditing(true);
         // Asegurar que existingShift.hour tiene un valor válido
         setSelectedHour(existingShift.hour || "");
-        
         // Si no es un turno especial y el turno existe, cargar los detalles del turno
         const specialOptions = ["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"];
         if (existingShift.hour && !specialOptions.includes(existingShift.hour) && existingShift.shift) {
           setSelectedShift(existingShift.shift);
-          setSelectedBreak(existingShift.break || "");
-          
+          // Corregir: Asegurarse de usar correctamente el valor del descanso
+          setSelectedBreak(existingShift.shift.break);
           // Cargar los turnos para esta hora
           fetch(`http://localhost:3000/turnity/shifts/by-hours/${existingShift.hour}`)
             .then(res => {
@@ -55,6 +54,8 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
             .then(data => {
               if (data) {
                 setBreaks(Array.isArray(data.breaks) ? data.breaks : []);
+                // Asegurarse de establecer el descanso seleccionado después de cargar los descansos disponibles
+                setSelectedBreak(existingShift.shift.break || "01:00:00");
               }
             })
             .catch(error => {
@@ -171,9 +172,15 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
 
   // Manejar guardar
   const handleSave = () => {
+    // Si es un turno normal (con horas) asegurarse de que se capture code_shift
     const shiftData = {
       hour: selectedHour,
-      shift: selectedShift,
+      shift: selectedShift ? {
+        id: selectedShift.id || selectedShift.code_shift,
+        code_shift: selectedShift.code_shift, // Asegurar que code_shift está incluido
+        initial_hour: selectedShift.initial_hour,
+        break: selectedBreak || selectedShift.break
+      } : null,
       break: selectedBreak,
       date: date,
       employeeId: employeeData?.number_document
@@ -233,7 +240,7 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
             >
               <option value="">Seleccionar turno</option>
               {Array.isArray(shifts) && shifts.map((shift) => {
-                const endHour = calculateEndHour(shift.initial_hour, shift.hours);
+                const endHour = shift.end_hour.slice(0, 5);
                 return (
                   <option key={shift.code_shift} value={shift.code_shift}>
                     {shift.initial_hour.slice(0, 5)} a {endHour}
@@ -285,20 +292,6 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
     </div>
   );
 };
-
-// Función auxiliar para calcular la hora de finalización
-function calculateEndHour(startTime, hours) {
-  if (!startTime || !hours) return "00:00";
-  
-  const [hours24, minutes] = startTime.split(':');
-  const startDate = new Date();
-  startDate.setHours(parseInt(hours24), parseInt(minutes), 0);
-  
-  const endDate = new Date(startDate);
-  endDate.setHours(endDate.getHours() + parseInt(hours));
-  
-  return `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
-}
 
 ShiftSelector.propTypes = {
   isOpen: PropTypes.bool.isRequired,
