@@ -233,6 +233,16 @@
   text-align: center;
 }
 
+.pass-message {
+  color: #e99313;
+  background-color: #ffffff;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  width: 100%;
+  text-align: center;
+}
+
 .error-message {
   color: #d32f2f;
   background-color: #ffebee;

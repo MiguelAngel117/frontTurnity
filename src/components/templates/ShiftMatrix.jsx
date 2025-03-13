@@ -21,6 +21,7 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
   // Estado para manejar la creación de turnos
   const [creatingShifts, setCreatingShifts] = useState(false);
   const [createSuccess, setCreateSuccess] = useState(false);
+  const [createPass, setCreatePass] = useState(false);
   const [createError, setCreateError] = useState(null);
   // Estado para almacenar los datos de turnos existentes
   const [employeeShiftsData, setEmployeeShiftsData] = useState([]);
@@ -466,10 +467,16 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
       
       const result = await response.json();
       
-      if (response.status === 201) {
+      if (response.status === 201 && (result.results.created > 0 || result.results.updated > 0)) {
         setCreateSuccess(true);
+        setCreatePass(false);
         console.log("Turnos creados exitosamente:", result);
-      } else {
+      } else if (response.status === 201 && result.results.skipped > 0 && (result.results.created === 0 && result.results.updated === 0)){
+        setCreatePass(true);
+        setCreateSuccess(false);
+      }
+      else {
+        setCreatePass(false);
         setCreateError(result.message || "Error al crear los turnos");
         console.error("Error creating shifts:", result);
       }
@@ -597,6 +604,12 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
             {createSuccess && (
               <div className="success-message">
                 ¡Turnos creados exitosamente!
+              </div>
+            )}
+
+            {createPass && (
+              <div className="pass-message">
+                No hay Modificaciones en los turnos
               </div>
             )}
             

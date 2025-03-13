@@ -133,7 +133,7 @@ EmployeeList.propTypes = {
     full_name: PropTypes.string.isRequired,
     working_day: PropTypes.number.isRequired,
     name_position: PropTypes.string.isRequired,
-    has_shifts: PropTypes.bool
+    has_shifts: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]).isRequired,
   })).isRequired,
   onEmployeeSelect: PropTypes.func.isRequired,
   onContinue: PropTypes.func.isRequired,
