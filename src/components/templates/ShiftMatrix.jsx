@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import PropTypes from 'prop-types';
 import "./ShiftMatrix.css";
 import ShiftSelector from "../buttons/ShiftSelector";
+import IncidentModal from "../modals/IncidentModal";
 
 const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
   const [weeks, setWeeks] = useState([]);
@@ -27,6 +28,8 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
   const [employeeShiftsData, setEmployeeShiftsData] = useState([]);
   // Estado para indicar si estamos cargando los turnos existentes
   const [loadingExistingShifts, setLoadingExistingShifts] = useState(false);
+  const [incidentsModalOpen, setIncidentsModalOpen] = useState(false);
+  const [incidents, setIncidents] = useState([]);
 
   // Ref para el scrolling
   const matrixRef = useRef(null);
@@ -450,6 +453,10 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
       return;
     }
     
+    // Reiniciar el estado de incidentes al iniciar una nueva operación
+    setIncidents([]);
+    setIncidentsModalOpen(false);
+    
     setCreatingShifts(true);
     setCreateError(null);
     setCreateSuccess(false);
@@ -471,14 +478,18 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
         setCreateSuccess(true);
         setCreatePass(false);
         console.log("Turnos creados exitosamente:", result);
-      } else if (response.status === 201 && result.results.skipped > 0 && (result.results.created === 0 && result.results.updated === 0)){
+      } else if (response.status === 201 && result.results.skipped > 0 && (result.results.created === 0 && result.results.updated === 0)) {
         setCreatePass(true);
         setCreateSuccess(false);
-      }
-      else {
+      } else {
         setCreatePass(false);
-        setCreateError(result.message || "Error al crear los turnos");
         console.error("Error creating shifts:", result);
+        
+        // Mostrar el modal de incidencias si hay errores en la respuesta
+        if (result.errors && result.errors.length > 0) {
+          setIncidents(result.errors);
+          setIncidentsModalOpen(true);
+        }
       }
     } catch (error) {
       setCreateError("Error de conexión al servidor");
@@ -597,9 +608,8 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
                 })}
               </div>
             </div>
+            
           </div>
-
-          {/* Botón para crear turnos */}
           <div className="create-shifts-section">
             {createSuccess && (
               <div className="success-message">
@@ -617,6 +627,16 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
               <div className="error-message">
                 Error: {createError}
               </div>
+            )}
+            
+            {/* Nuevo botón "Ver incidencias" que aparece cuando hay incidentes */}
+            {incidents && incidents.length > 0 && (
+              <button 
+                className="view-incidents-button" 
+                onClick={() => setIncidentsModalOpen(true)}
+              >
+                Ver incidencias
+              </button>
             )}
             
             <button 
@@ -642,6 +662,12 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
           existingShift={getExistingShift(selectedCell.employeeId, selectedCell.date)}
         />
       )}
+
+    <IncidentModal 
+      isOpen={incidentsModalOpen}
+      onClose={() => setIncidentsModalOpen(false)}
+      incidents={incidents}
+    />
     </div>
   );
 };

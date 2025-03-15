@@ -262,3 +262,19 @@
     min-width: 60px;
   }
 }
+
+.view-incidents-button {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.view-incidents-button:hover {
+  background-color: #f57c00;
+}

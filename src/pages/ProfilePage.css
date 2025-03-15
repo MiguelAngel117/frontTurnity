@@ -1,0 +1,93 @@
+/* src/pages/ProfilePage.css */
+.profile-container {
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .profile-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .profile-header {
+    background-color: #f5f5f5;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #6366f1;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: bold;
+  }
+  
+  .profile-name {
+    font-size: 24px;
+    font-weight: 600;
+  }
+  
+  .profile-details {
+    padding: 24px;
+  }
+  
+  .profile-info-row {
+    display: flex;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .profile-info-label {
+    width: 120px;
+    font-weight: 600;
+    color: #666;
+  }
+  
+  .profile-info-value {
+    flex: 1;
+  }
+  
+  .profile-actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+  }
+  
+  .profile-edit-button, .profile-password-button {
+    padding: 10px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+  
+  .profile-edit-button {
+    background-color: #6366f1;
+    color: white;
+  }
+  
+  .profile-password-button {
+    background-color: #f3f4f6;
+    color: #333;
+  }
+  
+  .profile-edit-button:hover {
+    background-color: #4f46e5;
+  }
+  
+  .profile-password-button:hover {
+    background-color: #e5e7eb;
+  }
