@@ -3,7 +3,8 @@ import "./CreateShifts.css";
 import Breadcrumb from "../components/buttons/Breadcrumb";
 import Dropdown from "../components/buttons/Dropdown";
 import EmployeeList from "../components/buttons/EmployeeList";
-import ShiftMatrix from "../components/templates/ShiftMatrix"; // Importamos el nuevo componente
+import ShiftMatrix from "../components/templates/ShiftMatrix";
+import { api } from "../utils/api";
 
 const CreateShifts = () => {
   const [stores, setStores] = useState([]);
@@ -17,15 +18,40 @@ const CreateShifts = () => {
   const [loading, setLoading] = useState(false);
   const [showMatrix, setShowMatrix] = useState(false);
   const [selectedEmployeesData, setSelectedEmployeesData] = useState([]);
+  const [userInfo, setUserInfo] = useState(null);
 
+  // Obtener datos del usuario al cargar el componente
   useEffect(() => {
-    fetch("http://localhost:3000/turnity/stores")
-      .then((res) => res.json())
-      .then((data) => setStores(data))
-      .catch((error) => console.error("Error fetching stores:", error));
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    setUserInfo(storedUser);
   }, []);
 
-  const handleStoreSelect = (store) => {
+  // Cargar tiendas disponibles
+  useEffect(() => {
+    const loadStores = async () => {
+      if (userInfo) {
+        try {
+            const data = await api.get(`/users/${userInfo.number_document}/stores`);
+          
+          // Filtrar tiendas según los permisos del usuario si es necesario
+          if (userInfo.stores && userInfo.stores.length > 0) {
+            const filteredStores = data.filter(store => 
+              userInfo.stores.includes(store.id_store)
+            );
+            setStores(filteredStores);
+          } else {
+            setStores(data);
+          }
+        } catch (error) {
+          console.error("Error loading stores:", error);
+        }
+      }
+    };
+
+    loadStores();
+  }, [userInfo]);
+
+  const handleStoreSelect = async (store) => {
     setSelectedStore(store);
     setSelectedDepartment(null);
     setEmployees([]);
@@ -33,34 +59,38 @@ const CreateShifts = () => {
     setShowStoresDropdown(false);
     setShowMatrix(false);
 
-    fetch(`http://localhost:3000/turnity/departmentStore/store/${store.id_store}`)
-      .then((res) => res.json())
-      .then((data) => setDepartments(data))
-      .catch((error) => console.error("Error fetching departments:", error));
+    try {
+      const data = await api.get(`/users/${userInfo.number_document}/stores/${store.id_store}/departments`);
+      setDepartments(data);
+    } catch (error) {
+      console.error("Error fetching departments:", error);
+    }
   };
 
-  const handleDepartmentSelect = (department) => {
+  const handleDepartmentSelect = async (department) => {
     setSelectedDepartment(department);
     setShowDepartmentsDropdown(false);
     setShowMatrix(false);
     
     if (selectedStore && department) {
       setLoading(true);
-      fetch(`http://localhost:3000/turnity/employeeDep/Store/${selectedStore.id_store}/department/${department.id_department}`)
-        .then((res) => res.json())
-        .then((data) => {
-          // Convertir number_document a string para evitar problemas con PropTypes
-          const formattedData = data.map(emp => ({
-            ...emp,
-            number_document: String(emp.number_document)
-          }));
-          setEmployees(formattedData);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching employees:", error);
-          setLoading(false);
-        });
+      try {
+        const data = await api.get(
+          `/employeeDep/Store/${selectedStore.id_store}/department/${department.id_department}`
+        );
+        
+        // Convertir number_document a string para evitar problemas con PropTypes
+        const formattedData = data.map(emp => ({
+          ...emp,
+          number_document: String(emp.number_document)
+        }));
+        
+        setEmployees(formattedData);
+      } catch (error) {
+        console.error("Error fetching employees:", error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -201,4 +231,4 @@ const CreateShifts = () => {
   );
 };
 
-export default CreateShifts;  
+export default CreateShifts;

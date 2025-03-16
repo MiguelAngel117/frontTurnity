@@ -1,4 +1,3 @@
-//import { useState, useEffect } from "react";
 import "./Breadcrumb.css";
 import PropTypes from "prop-types";
 

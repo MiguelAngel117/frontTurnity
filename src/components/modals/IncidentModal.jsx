@@ -16,8 +16,8 @@ const IncidentModal = ({ isOpen, onClose, incidents }) => {
             <table className="incidents-table">
               <thead>
                 <tr>
-                  <th>ID EMPLEADO</th>
-                  <th>MENSAJE</th>
+                  <th>Id Empleado</th>
+                  <th>Observación</th>
                 </tr>
               </thead>
               <tbody>

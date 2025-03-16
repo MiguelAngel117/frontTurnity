@@ -3,10 +3,11 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import { motion, AnimatePresence } from 'framer-motion';
+import { api } from '../../utils/api';
 
-const Login = ( {onLoginSuccess }) => {
+const Login = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({
-    identifier: '', // Can be email or username
+    identifier: '', 
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -56,17 +57,10 @@ const Login = ( {onLoginSuccess }) => {
         password: formData.password
       };
       
-      const response = await fetch('http://localhost:3000/turnity/users/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+      // Usar el método público de la API para el login
+      const data = await api.public.post('/users/login/', payload);
       
-      const data = await response.json();
-      
-      if (response.ok) {
+      if (data && data.token) {
         // Store token in localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
@@ -83,10 +77,15 @@ const Login = ( {onLoginSuccess }) => {
           navigate('/');
         }, 1000);
       } else {
-        showNotification(data.message || 'Error al iniciar sesión', 'error');
+        showNotification(data?.message || 'Error al iniciar sesión', 'error');
       }
     } catch (error) {
-      showNotification('Error de conexión', 'error');
+      // Si el error contiene un mensaje del servidor, mostrarlo
+      if (error.message) {
+        showNotification(error.message, 'error');
+      } else {
+        showNotification('Error de conexión', 'error');
+      }
       console.error('Login error:', error);
     } finally {
       setIsLoading(false);
@@ -175,6 +174,7 @@ const Login = ( {onLoginSuccess }) => {
     </div>
   );
 };
+
 Login.propTypes = {
   onLoginSuccess: PropTypes.func.isRequired,
 };

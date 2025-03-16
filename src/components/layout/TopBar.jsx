@@ -56,7 +56,7 @@ const Topbar = ({ isSidebarOpen, toggleSidebar, onLogout }) => {
             onClick={() => setDropdownOpen(!dropdownOpen)}
             style={{ color: 'white', cursor: 'pointer' }}
           >
-            👤
+          🧑🏻
           </div>
           {dropdownOpen && (
             <div className="dropdown-menu">

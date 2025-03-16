@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import "./ShiftMatrix.css";
 import ShiftSelector from "../buttons/ShiftSelector";
 import IncidentModal from "../modals/IncidentModal";
+import { api } from "../../utils/api";
 
 const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
   const [weeks, setWeeks] = useState([]);
@@ -43,17 +44,9 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
   const loadWeeks = async (date) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/turnity/employeeshift/generate-weeks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          date: formatDateForAPI(date)
-        }),
+      const result = await api.post('/employeeshift/generate-weeks', {
+        date: formatDateForAPI(date)
       });
-
-      const result = await response.json();
       
       if (result.success && result.data.weeks) {
         console.log("Weeks loaded:", result.data.weeks.weeks);
@@ -77,7 +70,7 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
     if (!employees || employees.length === 0 || !weeksData || weeksData.length === 0) {
       return;
     }
-
+  
     setLoadingExistingShifts(true);
     
     try {
@@ -88,21 +81,12 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
       // Preparar el array de IDs de empleados
       const employeeIds = employees.map(emp => emp.number_document);
       
-      // CORRECCIÓN: Usar POST en lugar de GET y pasar los datos en el body
-      const response = await fetch('http://localhost:3000/turnity/employeeshift/by-employee-list/', {
-        method: 'POST',  // Cambiado de GET a POST
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          employees: employeeIds,
-          startDate: startDate,
-          endDate: endDate,
-          numWeeks: weeksData.length
-        }),
+      const result = await api.post('/employeeshift/by-employee-list/', {
+        employees: employeeIds,
+        startDate: startDate,
+        endDate: endDate,
+        numWeeks: weeksData.length
       });
-
-      const result = await response.json();
       
       if (result.employeeShifts) {
         console.log("Existing shifts loaded:", result.employeeShifts);
@@ -444,7 +428,6 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
     };
   };
 
-  // Función para enviar los turnos al backend
   const handleCreateShifts = async () => {
     const { data, error } = prepareDataForBackend();
     
@@ -464,21 +447,13 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
     try {
       console.log("Enviando datos al backend:", data);
       
-      const response = await fetch('http://localhost:3000/turnity/employeeshift/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      const result = await api.post('/employeeshift/create', data);
       
-      const result = await response.json();
-      
-      if (response.status === 201 && (result.results.created > 0 || result.results.updated > 0)) {
+      if (result.results.created > 0 || result.results.updated > 0) {
         setCreateSuccess(true);
         setCreatePass(false);
         console.log("Turnos creados exitosamente:", result);
-      } else if (response.status === 201 && result.results.skipped > 0 && (result.results.created === 0 && result.results.updated === 0)) {
+      } else if (result.results.skipped > 0 && (result.results.created === 0 && result.results.updated === 0)) {
         setCreatePass(true);
         setCreateSuccess(false);
       } else {

@@ -3,7 +3,7 @@
 .sidebar {
   width: 250px;
   height: calc(100vh - 60px); /* Ajusta la altura para excluir el Topbar */
-  background-color: #343a40;
+  background-color: #0D47A1;
   color: white;
   position: fixed;
   top: 60px; /* Espacio reservado para el Topbar */
@@ -79,5 +79,5 @@
 }
 
 .sidebar.open .submenu {
-  display: block; /* Muestra las subopciones cuando el menú está abierto */
+  display: block;
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import "./ShiftSelector.css";
+import { api } from '../../utils/api';
 
 const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingShift }) => {
   const [hours, setHours] = useState([]);
@@ -29,27 +30,15 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
           // Corregir: Asegurarse de usar correctamente el valor del descanso
           setSelectedBreak(existingShift.shift.break);
           // Cargar los turnos para esta hora
-          fetch(`http://localhost:3000/turnity/shifts/by-hours/${existingShift.hour}`)
-            .then(res => {
-              if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-              }
-              return res.json();
-            })
+          api.get(`/shifts/by-hours/${existingShift.hour}`)
             .then(data => {
               setShifts(Array.isArray(data) ? data : []);
               
               // Si el turno tiene descanso, cargar los descansos
               if (existingShift.shift && existingShift.shift.code_shift) {
-                return fetch(`http://localhost:3000/turnity/shifts/breaks/${existingShift.shift.code_shift}`);
+                return api.get(`/shifts/breaks/${existingShift.shift.code_shift}`);
               }
               return null;
-            })
-            .then(res => {
-              if (res && !res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-              }
-              return res ? res.json() : null;
             })
             .then(data => {
               if (data) {
@@ -75,13 +64,7 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
       }
       
       // Cargar las horas disponibles
-      fetch("http://localhost:3000/turnity/shifts/list/")
-        .then(res => {
-          if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-          }
-          return res.json();
-        })
+      api.get("/shifts/list/")
         .then(data => {
           setHours(Array.isArray(data) ? data : []);
           setLoading(false);
@@ -109,13 +92,7 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
     }
     
     setLoading(true);
-    fetch(`http://localhost:3000/turnity/shifts/by-hours/${hour}`)
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
+    api.get(`/shifts/by-hours/${hour}`)
       .then(data => {
         setShifts(Array.isArray(data) ? data : []);
         setLoading(false);
@@ -138,13 +115,7 @@ const ShiftSelector = ({ isOpen, onClose, onSave, date, employeeData, existingSh
     }
     
     setLoading(true);
-    fetch(`http://localhost:3000/turnity/shifts/breaks/${shift.code_shift}`)
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
+    api.get(`/shifts/breaks/${shift.code_shift}`)
       .then(data => {
         setBreaks(Array.isArray(data.breaks) ? data.breaks : []);
         setLoading(false);

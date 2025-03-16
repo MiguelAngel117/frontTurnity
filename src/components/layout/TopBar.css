@@ -1,7 +1,7 @@
 .topbar {
     width: 100%; /* Ocupa todo el ancho */
     height: 60px; /* Altura fija */
-    background-color: #343a40; /* Fondo del Topbar */
+    background-color: #0D47A1; /* Fondo del Topbar */
     color: white; /* Color del texto */
     display: flex;
     align-items: center;
@@ -25,7 +25,7 @@
   }
   
   .toggle-button {
-    background-color: #495057;
+    background-color: #0D47A1;
     color: white;
     border: none;
     padding: 10px;
@@ -35,7 +35,7 @@
   }
   
   .toggle-button:hover {
-    background-color: #6c757d;
+    background-color: #1565C0;
   }
   
   .app-logo {
