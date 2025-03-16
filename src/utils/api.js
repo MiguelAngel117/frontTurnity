@@ -34,8 +34,6 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
         return null;
       }
       if (response.status !== 409) {
-        // Manejar otros errores
-        console.log("entraa");
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
       }

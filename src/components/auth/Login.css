@@ -158,6 +158,20 @@
   opacity: 0.7;
 }
 
+/* Error styles */
+.form-group.error input,
+.error-input {
+  border-color: var(--error-color) !important;
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.15) !important;
+}
+
+.error-message {
+  color: var(--error-color);
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
 .form-actions {
   display: flex;
   justify-content: space-between;
@@ -205,19 +219,32 @@
   overflow: hidden;
 }
 
-.login-button:hover {
+.login-button:hover:not(.disabled) {
   background-color: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: var(--shadow);
 }
 
-.login-button:active {
+.login-button:active:not(.disabled) {
   transform: translateY(0);
 }
 
 .login-button.loading {
   background-color: var(--primary-light);
   cursor: not-allowed;
+}
+
+/* Disabled button */
+.login-button.disabled {
+  background-color: var(--medium-gray);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  color: var(--dark-gray);
+}
+
+.login-button.disabled:hover::before {
+  width: 0;
 }
 
 .login-button.loading::after {
@@ -314,7 +341,7 @@
   }
   
   .login-left {
-    height: 40%;
+    height: 30%;
   }
   
   .brand-box {
@@ -330,7 +357,7 @@
   }
   
   .login-right {
-    height: 60%;
+    height: 70%;
   }
   
   .login-form-container {
@@ -341,7 +368,7 @@
 
 @media (max-width: 576px) {
   .login-left {
-    height: 35%;
+    height: 20%;  /* Reducido al 20% en pantallas pequeñas */
   }
   
   .brand-box {
@@ -358,16 +385,14 @@
   }
   
   .login-right {
-    height: 65%;
+    height: 80%;  /* Aumentado al 80% en pantallas pequeñas */
   }
   
   .login-form-container {
     width: 90%;
   }
   
-/* Continued from previous CSS */
-  
-.login-header h2 {
+  .login-header h2 {
     font-size: 1.5rem;
   }
   
@@ -457,7 +482,7 @@ input:-webkit-autofill:active {
   transition: width 0.3s ease;
 }
 
-.login-button:hover::before {
+.login-button:hover:not(.disabled)::before {
   width: 100%;
 }
 

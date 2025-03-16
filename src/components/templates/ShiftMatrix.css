@@ -278,3 +278,31 @@
 .view-incidents-button:hover {
   background-color: #f57c00;
 }
+
+.total-hours-cell {
+  min-width: 90px;
+  padding: 8px;
+  text-align: center;
+  background-color: #f0f0f0;
+  border-left: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.total-hours-value {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.hours-warning {
+  color: #e74c3c;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.hours-normal {
+  color: #27ae60;
+  font-size: 12px;
+  font-weight: bold;
+}

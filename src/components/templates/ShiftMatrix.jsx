@@ -202,29 +202,91 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
   };
 
   // Manejar guardar turno
-  const handleSaveShift = (shiftData) => {
-    console.log("Guardar turno:", shiftData);
+  // Manejar guardar turno
+const handleSaveShift = (shiftData) => {
+  console.log("Guardar turno:", shiftData);
+  
+  const key = `${shiftData.employeeId}_${formatDateForAPI(shiftData.date)}`;
+  
+  if (shiftData.deleted) {
+    setAssignedShifts(prev => {
+      const newState = { ...prev };
+      delete newState[key];
+      return newState;
+    });
+  } else {
+    // Buscar la información semanal correcta para este empleado
+    const employee = getEmployeesData().find(emp => emp.number_document === shiftData.employeeId);
     
-    // Crear clave única para el turno (employeeId + fecha)
-    const key = `${shiftData.employeeId}_${formatDateForAPI(shiftData.date)}`;
-    
-    // Si se está eliminando el turno, eliminar la entrada del estado
-    if (shiftData.deleted) {
-      setAssignedShifts(prev => {
-        const newState = { ...prev };
-        delete newState[key];
-        return newState;
-      });
-    } else {
-      // Actualizar estado de turnos asignados
-      setAssignedShifts(prev => ({
-        ...prev,
-        [key]: shiftData
-      }));
+    // Encontrar la semana correcta para la fecha actual
+    let weekIndex = -1;
+    for (let i = 0; i < weeks.length; i++) {
+      const weekStart = new Date(weeks[i].start + "T00:00:00");
+      const weekEnd = new Date(weeks[i].end + "T00:00:00");
+      
+      if (shiftData.date >= weekStart && shiftData.date <= weekEnd) {
+        weekIndex = i;
+        break;
+      }
     }
     
-    // Cerrar el selector
-    setShiftSelectorOpen(false);
+    // Obtener la jornada específica para esta semana si está disponible
+    let workingDay = employee?.working_day; // Jornada general por defecto
+    
+    if (employee?.weeklyShifts && weekIndex >= 0) {
+      const weeklyData = employee.weeklyShifts.find(w => w.week === weekIndex + 1);
+      if (weeklyData && weeklyData.working_day) {
+        workingDay = weeklyData.working_day;
+      }
+    }
+    
+    // Asegurarse de que tengamos las horas para el contador
+    const hoursValue = shiftData.hour && !isNaN(parseInt(shiftData.hour)) 
+      ? parseInt(shiftData.hour) 
+      : determineHoursForSpecialShift(shiftData.hour, workingDay);
+    
+    setAssignedShifts(prev => ({
+      ...prev,
+      [key]: {
+        ...shiftData,
+        hours: hoursValue // Añadir explícitamente las horas para cálculos posteriores
+      }
+    }));
+  }
+  
+  setShiftSelectorOpen(false);
+};
+
+  const calculateTotalHours = (employeeId) => {
+    if (!weeks[selectedWeekIndex]) return 0;
+    
+    const weekDays = getWeekDays();
+    let totalHours = 0;
+    
+    weekDays.forEach(day => {
+      const key = `${employeeId}_${formatDateForAPI(day)}`;
+      const shift = assignedShifts[key];
+      
+      if (shift) {
+        // Para turnos normales con horas numéricas
+        if (shift.hour && !isNaN(parseInt(shift.hour))) {
+          totalHours += parseInt(shift.hour);
+        } 
+        // Para turnos con horas explícitas
+        else if (shift.hours && !isNaN(parseInt(shift.hours))) {
+          totalHours += parseInt(shift.hours);
+        }
+        // Para turnos especiales
+        else if (["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(shift.hour)) {
+          const employee = getEmployeesData().find(emp => emp.number_document === employeeId);
+          if (employee) {
+            totalHours += determineHoursForSpecialShift(shift.hour, employee.working_day);
+          }
+        }
+      }
+    });
+    
+    return totalHours;
   };
 
   // Obtener información del turno asignado
@@ -279,23 +341,38 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
     
     return shift;
   };
+  //función para determinar horas para turnos especiales
+  const determineHoursForSpecialShift = (shiftType, workingDay) => {
+    if (["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(shiftType)) {
+      // Convertir workingDay a número para asegurar comparación correcta
+      const workingDayNum = parseInt(workingDay);
+      console.log("Working day number:", workingDay);
+      if (workingDayNum === 36) {
+        return 6;
+      } else {
+        return 8; // Para jornadas de 46, 24, y 16 horas
+      }
+    }
+    return 0; // Valor por defecto
+  };
 
   // Función para preparar los datos para el backend
   const prepareDataForBackend = () => {
-    if (!selectedStore || !selectedStore.id_store || !selectedDepartment || !selectedDepartment.id_department) {
+    // Validación inicial
+    if (!selectedStore?.id_store || !selectedDepartment?.id_department) {
       return { error: "Seleccione tienda y departamento para continuar" };
     }
-
-    if (!weeks || weeks.length === 0) {
+  
+    if (!weeks?.length) {
       return { error: "No hay semanas disponibles" };
     }
-
-    // Obtenemos la primera y última fecha del mes
+  
+    // Datos del rango de fechas
     const firstWeekStart = new Date(weeks[0].start + "T00:00:00");
     const lastWeekEnd = new Date(weeks[weeks.length - 1].end + "T00:00:00");
     const numWeeks = weeks.length;
-
-    // Obtenemos los empleados a procesar (desde los datos cargados o los props originales)
+  
+    // Determinar empleados a procesar
     const employeesToProcess = employeeShiftsData.length > 0 
       ? employeeShiftsData
       : employees.map(emp => ({
@@ -305,117 +382,100 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
           },
           weeklyShifts: []
         }));
-
-    // Organizamos los datos por empleado
-    const employeesWithShifts = [];
-
-    employeesToProcess.forEach(employeeData => {
+  
+    // Organizar datos por empleado de manera más eficiente
+    const employeesWithShifts = employeesToProcess.map(employeeData => {
       const employee = employeeData.employee;
-      const employeeShifts = [];
-      const weeklyShiftMap = {};
-
-      // Inicializamos la estructura de semanas
-      weeks.forEach((week, weekIndex) => {
-        // Buscamos si hay información específica para esta semana en los datos cargados
+      
+      // Inicializar la estructura de semanas
+      const weeklyShifts = weeks.map((week, weekIndex) => {
         const weekNumber = weekIndex + 1;
-        const weekInfo = employeeData.weeklyShifts && employeeData.weeklyShifts.find(w => w.week === weekNumber);
+        const weekInfo = employeeData.weeklyShifts?.find(w => w.week === weekNumber);
+        const workingDay = weekInfo?.working_day || employee.working_day;
         
-        // Usamos la jornada específica de la semana si existe, de lo contrario la general
-        const workingDay = weekInfo ? weekInfo.working_day : employee.working_day;
-        
-        weeklyShiftMap[weekNumber] = {
+        return {
           week: weekNumber,
-          working_day: workingDay, // Usamos la jornada específica de la semana
+          working_day: workingDay,
           shifts: []
         };
       });
-
-      // Recorremos todas las fechas para agregar los turnos
+      
+      // Recorrer todas las fechas y asignar turnos
       let currentDate = new Date(firstWeekStart);
       while (currentDate <= lastWeekEnd) {
-        const dateCopy = new Date(currentDate);
-        const dateStr = formatDateForAPI(dateCopy);
+        const dateStr = formatDateForAPI(currentDate);
         
-        // Encontrar a qué semana pertenece esta fecha
-        let weekNumber = 1;
+        // Encontrar la semana correspondiente
+        let weekIndex = -1;
         for (let i = 0; i < weeks.length; i++) {
           const weekStart = new Date(weeks[i].start + "T00:00:00");
           const weekEnd = new Date(weeks[i].end + "T00:00:00");
           
-          if (dateCopy >= weekStart && dateCopy <= weekEnd) {
-            weekNumber = i + 1;
+          if (currentDate >= weekStart && currentDate <= weekEnd) {
+            weekIndex = i;
             break;
           }
         }
         
-        // Buscar el turno asignado o asignar libre por defecto
-        const key = `${employee.number_document}_${dateStr}`;
-        const assignedShift = assignedShifts[key];
-        
-        // Shift para enviar al backend
-        let shiftData = {
-          shift_date: dateStr,
-          turn: "X",
-          hours: 0,
-          break: "01:00:00",
-          initial_hour: "00:00:00"
-        };
-        
-        // Si hay un turno asignado, lo usamos
-        if (assignedShift) {
-          if (["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(assignedShift.hour)) {
-            // Para turnos especiales
-            // Determinar las horas según la jornada del empleado
-            let hoursValue = 0;
-            if (employee.working_day === 36) {
-              hoursValue = 6;
-            } else {
-              hoursValue = 8; // Para jornadas de 46, 24, y 16 horas
+        if (weekIndex >= 0) {
+          // Buscar el turno asignado
+          const key = `${employee.number_document}_${dateStr}`;
+          const assignedShift = assignedShifts[key];
+          
+          // Shift para enviar al backend
+          let shiftData = {
+            shift_date: dateStr,
+            turn: "X",
+            hours: 0,
+            break: "01:00:00",
+            initial_hour: "00:00:00"
+          };
+          
+          // Si hay un turno asignado, usar sus datos
+          if (assignedShift) {
+            if (["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(assignedShift.hour)) {
+              // Para turnos especiales
+              const hoursValue = determineHoursForSpecialShift(
+                assignedShift.hour, 
+                employee.working_day
+              );
+              
+              shiftData = {
+                shift_date: dateStr,
+                turn: assignedShift.hour,
+                hours: hoursValue,
+                break: "01:00:00",
+                initial_hour: "00:00:00",
+                end_hour: "00:00:00"
+              };
+            } else if (assignedShift.shift && assignedShift.shift.id !== "X") {
+              // Para turnos normales
+              shiftData = {
+                shift_date: dateStr,
+                turn: assignedShift.shift.code_shift || assignedShift.shift.id,
+                hours: parseInt(assignedShift.hour) || 0,
+                break: assignedShift.shift.break || "01:00:00",
+                initial_hour: assignedShift.shift.initial_hour || "00:00:00",
+                end_hour: assignedShift.shift.end_hour || "00:00:00"
+              };
             }
-            
-            shiftData = {
-              shift_date: dateStr,
-              turn: assignedShift.hour,
-              hours: hoursValue,
-              break: "01:00:00",
-              initial_hour: "00:00:00",
-              end_hour: "00:00:00"
-            };
-          } else if (assignedShift.shift && assignedShift.shift.id !== "X" ) {
-            // Para turnos normales
-            shiftData = {
-              shift_date: dateStr,
-              turn: assignedShift.shift.code_shift || assignedShift.shift.id, // Usar code_shift si está disponible
-              hours: parseInt(assignedShift.hour) || 0,
-              break: assignedShift.shift.break || "01:00:00",
-              initial_hour: assignedShift.shift.initial_hour || "00:00:00",
-              end_hour: assignedShift.shift.end_hour || "00:00:00"
-            };
           }
-        }
-        
-        // Agregar el turno a la semana correspondiente
-        if (weeklyShiftMap[weekNumber]) {
-          weeklyShiftMap[weekNumber].shifts.push(shiftData);
+          
+          // Agregar el turno a la semana correspondiente
+          weeklyShifts[weekIndex].shifts.push(shiftData);
         }
         
         // Avanzar al siguiente día
         currentDate.setDate(currentDate.getDate() + 1);
       }
       
-      // Convertimos el mapa a array
-      Object.values(weeklyShiftMap).forEach(weekData => {
-        employeeShifts.push(weekData);
-      });
-      
-      // Agregamos el empleado con sus turnos
-      employeesWithShifts.push({
+      return {
         employee: {
           number_document: employee.number_document,
           working_day: employee.working_day
         },
-        weeklyShifts: employeeShifts
-      });
+        weeklyShifts
+      };
     });
     
     return {
@@ -541,46 +601,70 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
                     <div className="day-name">{day.toLocaleString('es-ES', { weekday: 'long' })}</div>
                   </div>
                 ))}
+                <div className="total-hours-cell header">Total Hrs</div>
               </div>
 
               <div className="scrollable-body">
                 {/* Filas de empleados */}
                 {displayEmployees.map((employee) => {
-                  // Obtener la jornada de la semana actual
-                  const currentWeekData = employee.weeklyShifts ? 
-                    employee.weeklyShifts.find(week => week.week === selectedWeekIndex + 1) : null;
-                  
-                  // Usar la jornada semanal si está disponible, sino usar la general
-                  const weeklyWorkingDay = currentWeekData ? currentWeekData.working_day : employee.working_day;
-                  
-                  return (
-                    <div key={employee.number_document} className="shift-matrix-row">
-                      <div className="employee-info-cell">
-                        <div className="employee-name">{employee.full_name || employee.name}</div>
-                        <div className="employee-document">ID: {employee.number_document}</div>
-                        <div className="employee-hours">{weeklyWorkingDay} hrs</div>
-                        <div className="employee-position">{employee.position}</div>
-                      </div>
-                      
-                      {/* Celdas para cada día */}
-                      {weekDays.map((day, dayIndex) => {
-                        const shiftInfo = getAssignedShiftInfo(employee.number_document, day);
-                        
-                        return (
-                          <div 
-                            key={dayIndex} 
-                            className={`shift-cell ${shiftInfo ? shiftInfo.className : ''}`}
-                            onClick={() => handleShiftCellClick(employee.number_document, day, employee)}
-                          >
-                            <span className="shift-status">
-                              {shiftInfo ? shiftInfo.label : "Libre"}
-                            </span>
-                          </div>
-                        );
-                      })}
+                // Obtener la jornada de la semana actual
+                const currentWeekData = employee.weeklyShifts ? 
+                  employee.weeklyShifts.find(week => week.week === selectedWeekIndex + 1) : null;
+                
+                // Usar la jornada semanal si está disponible, sino usar la general
+                const weeklyWorkingDay = currentWeekData ? currentWeekData.working_day : employee.working_day;
+                
+                // Calcular el total de horas para este empleado en la semana actual
+                const totalWeekHours = calculateTotalHours(employee.number_document);
+                
+                return (
+                  <div key={employee.number_document} className="shift-matrix-row">
+                    <div className="employee-info-cell">
+                      <div className="employee-name">{employee.full_name || employee.name}</div>
+                      <div className="employee-document">ID: {employee.number_document}</div>
+                      <div className="employee-hours">{weeklyWorkingDay} hrs</div>
+                      <div className="employee-position">{employee.position}</div>
                     </div>
-                  );
-                })}
+                    
+                    {/* Celdas para cada día */}
+                    {weekDays.map((day, dayIndex) => {
+                      const shiftInfo = getAssignedShiftInfo(employee.number_document, day);
+                      
+                      return (
+                        <div 
+                          key={dayIndex} 
+                          className={`shift-cell ${shiftInfo ? shiftInfo.className : ''}`}
+                          onClick={() => handleShiftCellClick(employee.number_document, day, employee)}
+                        >
+                          <span className="shift-status">
+                            {shiftInfo ? shiftInfo.label : "Libre"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Nueva columna para el total de horas */}
+                    <div className="total-hours-cell">
+                      <div className="total-hours-value">
+                        <strong>{totalWeekHours}</strong> hrs
+                      </div>
+                      {totalWeekHours < weeklyWorkingDay ? (
+                        <div className="hours-warning">
+                          Faltan hrs
+                        </div>
+                      ) : totalWeekHours > weeklyWorkingDay ? (
+                        <div className="hours-warning">
+                          Sobran hrs
+                        </div>
+                      ) : (
+                        <div className="hours-normal">
+                          Completo
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
               </div>
             </div>
             

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
@@ -10,9 +10,39 @@ const Login = ({ onLoginSuccess }) => {
     identifier: '', 
     password: ''
   });
+  const [errors, setErrors] = useState({
+    identifier: false,
+    password: false
+  });
+  const [touched, setTouched] = useState({
+    identifier: false,
+    password: false
+  });
+  const [isFormValid, setIsFormValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
+
+  // Validar el formulario cada vez que cambian los datos
+  useEffect(() => {
+    const isValid = formData.identifier.trim() !== '' && formData.password.trim() !== '';
+    setIsFormValid(isValid);
+    
+    // Actualizar errores si los campos han sido tocados
+    if (touched.identifier) {
+      setErrors(prev => ({
+        ...prev,
+        identifier: formData.identifier.trim() === ''
+      }));
+    }
+    
+    if (touched.password) {
+      setErrors(prev => ({
+        ...prev,
+        password: formData.password.trim() === ''
+      }));
+    }
+  }, [formData, touched]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,6 +50,27 @@ const Login = ({ onLoginSuccess }) => {
       ...formData,
       [name]: value
     });
+  };
+
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched({
+      ...touched,
+      [name]: true
+    });
+    
+    // Validar campo cuando pierde el foco
+    if (name === 'identifier') {
+      setErrors({
+        ...errors,
+        identifier: formData.identifier.trim() === ''
+      });
+    } else if (name === 'password') {
+      setErrors({
+        ...errors,
+        password: formData.password.trim() === ''
+      });
+    }
   };
 
   const showNotification = (message, type) => {
@@ -30,11 +81,22 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   const validateForm = () => {
-    if (!formData.identifier) {
+    const newErrors = {
+      identifier: formData.identifier.trim() === '',
+      password: formData.password.trim() === ''
+    };
+    
+    setErrors(newErrors);
+    setTouched({
+      identifier: true,
+      password: true
+    });
+    
+    if (newErrors.identifier) {
       showNotification('Por favor ingrese su email o nombre de usuario', 'error');
       return false;
     }
-    if (!formData.password) {
+    if (newErrors.password) {
       showNotification('Por favor ingrese su contraseña', 'error');
       return false;
     }
@@ -49,11 +111,8 @@ const Login = ({ onLoginSuccess }) => {
     setIsLoading(true);
     
     try {
-      // Determine if input is email or username
-      const isEmail = formData.identifier.includes('@');
-      
       const payload = {
-        [isEmail ? 'email' : 'alias_user']: formData.identifier,
+        identifier: formData.identifier,
         password: formData.password
       };
       
@@ -77,7 +136,7 @@ const Login = ({ onLoginSuccess }) => {
           navigate('/');
         }, 1000);
       } else {
-        showNotification(data?.message || 'Error al iniciar sesión', 'error');
+        showNotification(data?.error || 'Error al iniciar sesión', 'error');
       }
     } catch (error) {
       // Si el error contiene un mensaje del servidor, mostrarlo
@@ -112,7 +171,7 @@ const Login = ({ onLoginSuccess }) => {
           </div>
           
           <form className="login-form" onSubmit={handleSubmit}>
-            <div className="form-group">
+            <div className={`form-group ${errors.identifier ? 'error' : ''}`}>
               <label htmlFor="identifier">Email o Usuario</label>
               <input
                 type="text"
@@ -121,10 +180,12 @@ const Login = ({ onLoginSuccess }) => {
                 placeholder="Ingrese su email o nombre de usuario"
                 value={formData.identifier}
                 onChange={handleChange}
+                onBlur={handleBlur}
+                className={errors.identifier ? 'error-input' : ''}
               />
             </div>
             
-            <div className="form-group">
+            <div className={`form-group ${errors.password ? 'error' : ''}`}>
               <label htmlFor="password">Contraseña</label>
               <input
                 type="password"
@@ -133,6 +194,8 @@ const Login = ({ onLoginSuccess }) => {
                 placeholder="Ingrese su contraseña"
                 value={formData.password}
                 onChange={handleChange}
+                onBlur={handleBlur}
+                className={errors.password ? 'error-input' : ''}
               />
             </div>
             
@@ -146,8 +209,8 @@ const Login = ({ onLoginSuccess }) => {
             
             <button 
               type="submit" 
-              className={`login-button ${isLoading ? 'loading' : ''}`}
-              disabled={isLoading}
+              className={`login-button ${isLoading ? 'loading' : ''} ${!isFormValid ? 'disabled' : ''}`}
+              disabled={isLoading || !isFormValid}
             >
               {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
