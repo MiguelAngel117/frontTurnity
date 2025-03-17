@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import './Sidebar.css';
+import './SidebarTurn.css';
 import PropTypes from 'prop-types';
 
 const Sidebar = ({ isOpen }) => {
@@ -29,7 +29,7 @@ const Sidebar = ({ isOpen }) => {
                 <NavLink to="/schedules/create">Crear Turnos</NavLink>
               </li>
               <li>
-                <NavLink to="/schedules/reports">Reportes</NavLink>
+                <NavLink to="/schedules/reports">Reportes Turnos</NavLink>
               </li>
             </ul>
           </li>
@@ -43,6 +43,19 @@ const Sidebar = ({ isOpen }) => {
             <ul className={`submenu ${!expandedItems['empleados'] ? 'hidden' : ''}`}>
               <li>
                 <NavLink to="/employees/edit">Editar Empleados</NavLink>
+              </li>
+            </ul>
+          </li>
+          <li className={`menu-item ${isOpen ? '' : 'hidden'}`}>
+            <span
+              className={`menu-title ${isOpen ? '' : 'hidden'}`}
+              onClick={() => toggleItem('reportes')}
+            >
+              Reportes
+            </span>
+            <ul className={`submenu ${!expandedItems['reportes'] ? 'hidden' : ''}`}>
+              <li>
+                <NavLink to="/reports/salary">Compensación y Salarios</NavLink>
               </li>
             </ul>
           </li>

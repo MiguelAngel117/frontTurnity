@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import './Login.css';
+import './LoginTur.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../utils/api';
 

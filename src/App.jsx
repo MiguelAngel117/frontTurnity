@@ -1,11 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import Sidebar from './components/layout/Sidebar.jsx';
+import Sidebar from './components/layout/SideBarTurn.jsx';
 import Topbar from './components/layout/TopBar.jsx';
 import CreateSchedules from './pages/CreateShifts.jsx';
 import ReportsSchedules from './pages/ReportShifts.jsx';
 import EditEmployees from './pages/EditEmployees.jsx';
-import Login from './components/auth/Login.jsx';
+import Login from './components/auth/LoginTur.jsx';
+import ReportSalary from './pages/ReportSalary.jsx';
 import './styles/App.css';
 import HomePage from './pages/HomePage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx'
@@ -91,7 +92,8 @@ const App = () => {
                     <Route path="/schedules/create" element={<CreateSchedules />} />
                     <Route path="/schedules/reports" element={<ReportsSchedules />} />
                     <Route path="/employees/edit" element={<EditEmployees />} />
-
+                    <Route path="/reports/salary" element={<ReportSalary />} />
+                    
                     <Route path="/profile" element={<ProfilePage />} />
                   </Routes>
                 </div>
