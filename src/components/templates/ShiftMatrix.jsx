@@ -5,6 +5,7 @@ import ShiftSelector from "../buttons/ShiftSelector";
 import IncidentModal from "../modals/IncidentModal";
 import { api } from "../../utils/api";
 
+
 const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
   const [weeks, setWeeks] = useState([]);
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
@@ -76,16 +77,14 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
     try {
       // Obtener las fechas de inicio y fin basadas en las semanas
       const startDate = weeksData[0].start;
-      const endDate = weeksData[weeksData.length - 1].end;
+      const month = startDate.substring(5, 7);
       
       // Preparar el array de IDs de empleados
       const employeeIds = employees.map(emp => emp.number_document);
       
       const result = await api.post('/employeeshift/by-employee-list/', {
         employees: employeeIds,
-        startDate: startDate,
-        endDate: endDate,
-        numWeeks: weeksData.length
+        month
       });
       
       if (result.employeeShifts) {
@@ -552,7 +551,7 @@ const handleSaveShift = (shiftData) => {
 
   const weekDays = getWeekDays();
   const displayEmployees = getEmployeesData();
-  
+
   return (
     <div className="shift-matrix-container">
       <div className="month-navigation">
