@@ -202,7 +202,6 @@ const ShiftMatrix = ({ employees, selectedStore, selectedDepartment }) => {
   };
 
   // Manejar guardar turno
-  // Manejar guardar turno
 const handleSaveShift = (shiftData) => {
   console.log("Guardar turno:", shiftData);
   
@@ -257,7 +256,7 @@ const handleSaveShift = (shiftData) => {
   setShiftSelectorOpen(false);
 };
 
-  const calculateTotalHours = (employeeId) => {
+  const calculateTotalHours = (employeeId, working_day) => {
     if (!weeks[selectedWeekIndex]) return 0;
     
     const weekDays = getWeekDays();
@@ -280,7 +279,7 @@ const handleSaveShift = (shiftData) => {
         else if (["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(shift.hour)) {
           const employee = getEmployeesData().find(emp => emp.number_document === employeeId);
           if (employee) {
-            totalHours += determineHoursForSpecialShift(shift.hour, employee.working_day);
+            totalHours += determineHoursForSpecialShift(shift.hour, working_day);
           }
         }
       }
@@ -435,9 +434,10 @@ const handleSaveShift = (shiftData) => {
           if (assignedShift) {
             if (["CUMPLEAÑOS", "VACACIONES", "INCAPACIDAD", "JURADO VOT", "DIA_FAMILIA", "LICENCIA", "DIA_DISFRUTE"].includes(assignedShift.hour)) {
               // Para turnos especiales
+              console.log("Special shift:",employee.working_day);
               const hoursValue = determineHoursForSpecialShift(
                 assignedShift.hour, 
-                employee.working_day
+                weeklyShifts[weekIndex].working_day
               );
               
               shiftData = {
@@ -543,7 +543,6 @@ const handleSaveShift = (shiftData) => {
         full_name: empData.employee.name,  // Usar el name que viene de la API
         working_day: empData.employee.working_day,
         position: empData.employee.position,  // Usar el position que viene de la API
-        // Agregamos la información semanal para usar después
         weeklyShifts: empData.weeklyShifts
       }));
     }
@@ -553,7 +552,7 @@ const handleSaveShift = (shiftData) => {
 
   const weekDays = getWeekDays();
   const displayEmployees = getEmployeesData();
-
+  
   return (
     <div className="shift-matrix-container">
       <div className="month-navigation">
@@ -574,9 +573,8 @@ const handleSaveShift = (shiftData) => {
         <>
           <div className="week-selector">
             {weeks.map((week, index) => {
-              // Extraer el día de la fecha en formato YYYY-MM-DD (los últimos dos caracteres)
-              const formattedStart = week.start.substring(8, 10); // Día de inicio
-              const formattedEnd = week.end.substring(8, 10); // Día de fin
+              const formattedStart = week.start.substring(8, 10);
+              const formattedEnd = week.end.substring(8, 10);
 
               return (
                 <button 
@@ -592,83 +590,85 @@ const handleSaveShift = (shiftData) => {
 
           <div className="shift-matrix" ref={matrixRef}>
             <div className="shift-matrix-grid">
-              {/* Encabezado de días */}
-              <div className="shift-matrix-row header-row">
-                <div className="employee-info-cell">Colaboradores</div>
-                {weekDays.map((day, index) => (
-                  <div key={index} className="day-cell">
-                    <div className="day-number">{day.getDate()}</div>
-                    <div className="day-name">{day.toLocaleString('es-ES', { weekday: 'long' })}</div>
-                  </div>
-                ))}
-                <div className="total-hours-cell header">Total Hrs</div>
+              {/* Header fixed section */}
+              <div className="shift-matrix-header">
+                <div className="shift-matrix-row header-row">
+                  <div className="employee-info-cell">Colaboradores</div>
+                  {weekDays.map((day, index) => (
+                    <div key={index} className="day-cell">
+                      <div className="day-number">{day.getDate()}</div>
+                      <div className="day-name">{day.toLocaleString('es-ES', { weekday: 'long' })}</div>
+                    </div>
+                  ))}
+                  <div className="total-hours-cell header">Total Hrs</div>
+                </div>
               </div>
 
-              <div className="scrollable-body">
-                {/* Filas de empleados */}
+              {/* Scrollable body section */}
+              <div className="shift-matrix-body">
                 {displayEmployees.map((employee) => {
-                // Obtener la jornada de la semana actual
-                const currentWeekData = employee.weeklyShifts ? 
-                  employee.weeklyShifts.find(week => week.week === selectedWeekIndex + 1) : null;
-                
-                // Usar la jornada semanal si está disponible, sino usar la general
-                const weeklyWorkingDay = currentWeekData ? currentWeekData.working_day : employee.working_day;
-                
-                // Calcular el total de horas para este empleado en la semana actual
-                const totalWeekHours = calculateTotalHours(employee.number_document);
-                
-                return (
-                  <div key={employee.number_document} className="shift-matrix-row">
-                    <div className="employee-info-cell">
-                      <div className="employee-name">{employee.full_name || employee.name}</div>
-                      <div className="employee-document">ID: {employee.number_document}</div>
-                      <div className="employee-hours">{weeklyWorkingDay} hrs</div>
-                      <div className="employee-position">{employee.position}</div>
-                    </div>
-                    
-                    {/* Celdas para cada día */}
-                    {weekDays.map((day, dayIndex) => {
-                      const shiftInfo = getAssignedShiftInfo(employee.number_document, day);
-                      
-                      return (
-                        <div 
-                          key={dayIndex} 
-                          className={`shift-cell ${shiftInfo ? shiftInfo.className : ''}`}
-                          onClick={() => handleShiftCellClick(employee.number_document, day, employee)}
-                        >
-                          <span className="shift-status">
-                            {shiftInfo ? shiftInfo.label : "Libre"}
-                          </span>
-                        </div>
-                      );
-                    })}
-                    
-                    {/* Nueva columna para el total de horas */}
-                    <div className="total-hours-cell">
-                      <div className="total-hours-value">
-                        <strong>{totalWeekHours}</strong> hrs
+                  // Obtener la jornada de la semana actual
+                  const currentWeekData = employee.weeklyShifts ? 
+                    employee.weeklyShifts.find(week => week.week === selectedWeekIndex + 1) : null;
+                  
+                  // Usar la jornada semanal si está disponible, sino usar la general
+                  const weeklyWorkingDay = currentWeekData ? currentWeekData.working_day : employee.working_day;
+                  
+                  // Calcular el total de horas para este empleado en la semana actual
+                  const totalWeekHours = calculateTotalHours(employee.number_document, weeklyWorkingDay);
+                  
+                  return (
+                    <div key={employee.number_document} className="shift-matrix-row">
+                      <div className="employee-info-cell">
+                        <div className="employee-name">{employee.full_name || employee.name}</div>
+                        <div className="employee-document">ID: {employee.number_document}</div>
+                        <div className="employee-hours">{weeklyWorkingDay} hrs</div>
+                        <div className="employee-position">{employee.position}</div>
                       </div>
-                      {totalWeekHours < weeklyWorkingDay ? (
-                        <div className="hours-warning">
-                          Faltan hrs
+                      
+                      {/* Celdas para cada día */}
+                      {weekDays.map((day, dayIndex) => {
+                        const shiftInfo = getAssignedShiftInfo(employee.number_document, day);
+                        
+                        return (
+                          <div 
+                            key={dayIndex} 
+                            className={`shift-cell ${shiftInfo ? shiftInfo.className : ''}`}
+                            onClick={() => handleShiftCellClick(employee.number_document, day, employee)}
+                          >
+                            <span className="shift-status">
+                              {shiftInfo ? shiftInfo.label : "Libre"}
+                            </span>
+                          </div>
+                        );
+                      })}
+                      
+                      {/* Nueva columna para el total de horas */}
+                      <div className="total-hours-cell">
+                        <div className="total-hours-value">
+                          <strong>{totalWeekHours}</strong> hrs
                         </div>
-                      ) : totalWeekHours > weeklyWorkingDay ? (
-                        <div className="hours-warning">
-                          Sobran hrs
-                        </div>
-                      ) : (
-                        <div className="hours-normal">
-                          Completo
-                        </div>
-                      )}
+                        {totalWeekHours < weeklyWorkingDay ? (
+                          <div className="hours-warning">
+                            Faltan hrs
+                          </div>
+                        ) : totalWeekHours > weeklyWorkingDay ? (
+                          <div className="hours-warning">
+                            Sobran hrs
+                          </div>
+                        ) : (
+                          <div className="hours-normal">
+                            Completo
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
               </div>
             </div>
-            
           </div>
+          
           <div className="create-shifts-section">
             {createSuccess && (
               <div className="success-message">
@@ -688,7 +688,7 @@ const handleSaveShift = (shiftData) => {
               </div>
             )}
             
-            {/* Nuevo botón "Ver incidencias" que aparece cuando hay incidentes */}
+            {/* Botón "Ver incidencias" */}
             {incidents && incidents.length > 0 && (
               <button 
                 className="view-incidents-button" 
@@ -709,7 +709,7 @@ const handleSaveShift = (shiftData) => {
         </>
       )}
 
-      {/* Selector de turnos con clave única para forzar remontaje */}
+      {/* Selector de turnos */}
       {shiftSelectorOpen && (
         <ShiftSelector 
           key={`${selectedCell.employeeId}_${selectedCell.date ? selectedCell.date.getTime() : 'new'}`}
@@ -722,11 +722,11 @@ const handleSaveShift = (shiftData) => {
         />
       )}
 
-    <IncidentModal 
-      isOpen={incidentsModalOpen}
-      onClose={() => setIncidentsModalOpen(false)}
-      incidents={incidents}
-    />
+      <IncidentModal 
+        isOpen={incidentsModalOpen}
+        onClose={() => setIncidentsModalOpen(false)}
+        incidents={incidents}
+      />
     </div>
   );
 };

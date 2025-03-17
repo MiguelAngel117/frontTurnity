@@ -12,14 +12,16 @@ const IncidentModal = ({ isOpen, onClose, incidents }) => {
           <button className="close-button" onClick={onClose}>×</button>
         </div>
         <div className="incident-modal-body">
-          <div className="incidents-table-container">
+          <table className="incidents-table">
+            <thead>
+              <tr>
+                <th>Id Empleado</th>
+                <th>Observación</th>
+              </tr>
+            </thead>
+          </table>
+          <div className="incidents-table-body-container">
             <table className="incidents-table">
-              <thead>
-                <tr>
-                  <th>Id Empleado</th>
-                  <th>Observación</th>
-                </tr>
-              </thead>
               <tbody>
                 {incidents.map((incident, index) => (
                   <tr 

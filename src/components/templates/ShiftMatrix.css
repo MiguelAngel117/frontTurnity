@@ -67,17 +67,30 @@
 
 .shift-matrix {
   position: relative;
-  max-height: 600px;
-  overflow: hidden;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
 }
 
 .shift-matrix-grid {
   display: flex;
   flex-direction: column;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  overflow: hidden;
+  width: 100%;
+}
+
+.shift-matrix-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shift-matrix-body {
+  max-height: 320px; /* Altura aproximada para 4 filas */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .shift-matrix-row {
@@ -89,17 +102,15 @@
   border-bottom: none;
 }
 
+.shift-matrix-body-container {
+  position: relative;
+  overflow: hidden; /* Importante: contiene el overflow de la barra de desplazamiento */
+}
+
+
 .header-row {
   background-color: #f0f0f0;
   font-weight: 500;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.scrollable-body {
-  max-height: 560px;
-  overflow-y: auto;
 }
 
 .employee-info-cell {
@@ -277,6 +288,14 @@
 
 .view-incidents-button:hover {
   background-color: #f57c00;
+}
+
+.total-hours-cell.header {
+  background-color: #f0f0f0;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .total-hours-cell {
