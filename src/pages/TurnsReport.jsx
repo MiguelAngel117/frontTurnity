@@ -178,21 +178,25 @@ const TurnsReport = () => {
 
   function getMonthName(month) {
     try {
-      // Asegúrate de que month sea un número entero entre 1-12
-      const monthNumber = parseInt(month, 10);
-      if (isNaN(monthNumber) || monthNumber < 1 || monthNumber > 12) {
-        return "Mes inválido";
-      }
-      
-      const date = new Date();
-      date.setDate(1);
-      date.setMonth(monthNumber - 1);
-      return format(date, 'MMMM', { locale: es });
+        // Asegúrate de que month sea un número entero entre 1-12
+        const monthNumber = parseInt(month, 10);
+        if (isNaN(monthNumber) || monthNumber < 1 || monthNumber > 12) {
+            return "Mes inválido";
+        }
+
+        const date = new Date();
+        date.setDate(1);
+        date.setMonth(monthNumber - 1);
+        const monthName = format(date, 'MMMM', { locale: es });
+
+        // Asegúrate de que el nombre del mes esté en minúsculas antes de capitalizar la primera letra
+        return monthName.toLowerCase().charAt(0).toUpperCase() + monthName.slice(1);
     } catch (error) {
-      console.error("Error en getMonthName:", error);
-      return "Mes desconocido";
+        console.error("Error en getMonthName:", error);
+        return "Mes desconocido";
     }
-  }
+}
+
 
   const handleBreadcrumbClick = (item, index) => {
     if (index === 0) {
@@ -323,11 +327,12 @@ const TurnsReport = () => {
                   disabled={loading}
                 >
                   <option value="">Seleccionar mes</option>
-                  {availableMonths.map((month) => (
+                    {availableMonths.map((month) => (
                     <option key={month.value} value={month.value}>
-                      {month.label}
+                        {month.label.charAt(0).toUpperCase() + month.label.slice(1)}
                     </option>
-                  ))}
+                    ))}
+
                 </select>
                 <div className="select-arrow">
                   <ChevronDown size={16} />
