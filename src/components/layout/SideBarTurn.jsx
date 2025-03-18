@@ -29,7 +29,7 @@ const Sidebar = ({ isOpen }) => {
                 <NavLink to="/schedules/create">Crear Turnos</NavLink>
               </li>
               <li>
-                <NavLink to="/schedules/reports">Reportes Turnos</NavLink>
+                <NavLink to="/schedules/report_turns">Mallas</NavLink>
               </li>
             </ul>
           </li>
@@ -46,6 +46,35 @@ const Sidebar = ({ isOpen }) => {
               </li>
             </ul>
           </li>
+
+          <li className={`menu-item ${isOpen ? '' : 'hidden'}`}>
+            <span
+              className={`menu-title ${isOpen ? '' : 'hidden'}`}
+              onClick={() => toggleItem('usuarios')}
+            >
+              Usuarios
+            </span>
+            <ul className={`submenu ${!expandedItems['usuarios'] ? 'hidden' : ''}`}>
+              <li>
+                <NavLink to="/users/user">Gestionar Usuarios</NavLink>
+              </li>
+              <li>
+                <NavLink to="/users/access">Gestionar Accesos</NavLink>
+              </li>
+            </ul>
+          </li>
+
+          <li className={`menu-item ${isOpen ? '' : 'hidden'}`}>
+            <span
+              className={`menu-title ${isOpen ? '' : 'hidden'}`}
+              onClick={() => toggleItem('permissions')}
+            >
+            <NavLink to="/permissons/access" className="menu-title">
+              Permisos
+            </NavLink>
+            </span>
+          </li>
+
           <li className={`menu-item ${isOpen ? '' : 'hidden'}`}>
             <span
               className={`menu-title ${isOpen ? '' : 'hidden'}`}
@@ -56,9 +85,6 @@ const Sidebar = ({ isOpen }) => {
             <ul className={`submenu ${!expandedItems['reportes'] ? 'hidden' : ''}`}>
               <li>
                 <NavLink to="/reports/salary">Compensación y Salarios</NavLink>
-              </li>
-              <li>
-                <NavLink to="/reports/turns">Mallas</NavLink>
               </li>
             </ul>
           </li>

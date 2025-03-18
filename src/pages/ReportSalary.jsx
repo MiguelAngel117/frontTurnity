@@ -93,7 +93,7 @@ const ReportSalary = () => {
   return (
     <div className="report-container">
       <div className="report-card">
-        <h1 className="report-title">Reporte de Compensación y Salarios</h1>
+        <h1 className="report-title">Reporte Compensación y Salarios</h1>
         
         {/* Selector de mes - oculto cuando el reporte está generado */}
         {!reportGenerated && (
