@@ -57,6 +57,9 @@ const Sidebar = ({ isOpen }) => {
               <li>
                 <NavLink to="/reports/salary">Compensación y Salarios</NavLink>
               </li>
+              <li>
+                <NavLink to="/reports/turns">Mallas</NavLink>
+              </li>
             </ul>
           </li>
         </ul>

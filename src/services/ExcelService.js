@@ -20,7 +20,7 @@ class ExcelService {
 
       // Ajustar el ancho de las columnas
       const columnsWidth = [
-        { wch: 15 }, // codigo_persona
+        { wch: 12 }, // codigo_persona
         { wch: 30 }, // nombre
         { wch: 10 }, // jornada
         { wch: 12 }, // codigo_turno
