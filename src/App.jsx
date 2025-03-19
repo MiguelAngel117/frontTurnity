@@ -10,8 +10,8 @@ import ReportSalary from './pages/ReportSalary.jsx';
 import TurnsReport from './pages/TurnsReport.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import './styles/App.css';
-import HomePage from './pages/HomePage.jsx';
-import ProfilePage from './pages/ProfilePage.jsx'
+import HomePage from './pages/HomePage';
+import ProfilePage from './pages/ProfilePage'
 
 const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
