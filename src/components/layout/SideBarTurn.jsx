@@ -50,27 +50,10 @@ const Sidebar = ({ isOpen }) => {
           <li className={`menu-item ${isOpen ? '' : 'hidden'}`}>
             <span
               className={`menu-title ${isOpen ? '' : 'hidden'}`}
-              onClick={() => toggleItem('usuarios')}
+              onClick={() => toggleItem('users')}
             >
+            <NavLink to="/users/" className="menu-title">
               Usuarios
-            </span>
-            <ul className={`submenu ${!expandedItems['usuarios'] ? 'hidden' : ''}`}>
-              <li>
-                <NavLink to="/users/user">Gestionar Usuarios</NavLink>
-              </li>
-              <li>
-                <NavLink to="/users/access">Gestionar Accesos</NavLink>
-              </li>
-            </ul>
-          </li>
-
-          <li className={`menu-item ${isOpen ? '' : 'hidden'}`}>
-            <span
-              className={`menu-title ${isOpen ? '' : 'hidden'}`}
-              onClick={() => toggleItem('permissions')}
-            >
-            <NavLink to="/permissons/access" className="menu-title">
-              Permisos
             </NavLink>
             </span>
           </li>

@@ -295,7 +295,6 @@ const TurnsReport = () => {
 
       {/* Contenido principal */}
       <div className="turns-report-container">
-        <div className="report-card">
           <h1 className="turns-report-title">Reporte de Turnos</h1>
           
           {/* Mensaje de selección o carga */}
@@ -390,7 +389,6 @@ const TurnsReport = () => {
               </button>
             </div>
           )}
-        </div>
       </div>
 
       {/* Dropdowns flotantes */}

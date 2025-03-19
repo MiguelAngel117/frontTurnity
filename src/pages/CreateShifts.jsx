@@ -157,59 +157,87 @@ const CreateShifts = () => {
   }));
 
   return (
-    <div className="page">
+    <div className="create-shifts-page">
       {/* Breadcrumb reutilizable */}
       <Breadcrumb 
         items={breadcrumbItems}
         onItemClick={handleBreadcrumbClick}
       />
-
-      {/* Mensajes de selección */}
-      {(!selectedStore || !selectedDepartment) && !showMatrix && (
-        <div className="selection-prompt">
-          {!selectedStore ? 
-            <p>Por favor selecciona una tienda</p> : 
-            <p>Por favor selecciona un departamento</p>
-          }
-        </div>
-      )}
-
-      {/* Mostrar EmployeeList o ShiftMatrix según el estado */}
-      {selectedStore && selectedDepartment && !showMatrix && (
-        <div className="shifts-container">
-          <h2>Crear Turnos</h2>
+  
+      {/* Contenido principal */}
+      <div className="create-shifts-container">
+        <div className="shifts-card">
+          <h1 className="create-shifts-title">Crear Turnos</h1>
+          
+          {/* Mensaje de selección o carga */}
           {loading ? (
-            <p className="loading-message">Cargando empleados...</p>
-          ) : (
-            <EmployeeList 
-              employees={employees} 
-              onEmployeeSelect={handleEmployeeSelect}
-              onContinue={handleContinue}
-              selectedEmployees={selectedEmployees}
-            />
+            <div className="loading-indicator">
+              <div className="spinner"></div>
+              <p>Cargando información...</p>
+            </div>
+          ) : (!selectedStore || !selectedDepartment) && !showMatrix ? (
+            <div className="selection-prompt">
+              {!selectedStore ? 
+                <p>Por favor selecciona una tienda</p> : 
+                <p>Por favor selecciona un departamento</p>
+              }
+            </div>
+          ) : null}
+          
+          {/* Mostrar EmployeeList cuando se ha seleccionado tienda y departamento */}
+          {selectedStore && selectedDepartment && !showMatrix && (
+            <div className="employees-selection-container">
+              {loading ? (
+                <div className="loading-indicator">
+                  <div className="spinner"></div>
+                  <p>Cargando empleados...</p>
+                </div>
+              ) : (
+                <>
+                  <EmployeeList 
+                    employees={employees} 
+                    onEmployeeSelect={handleEmployeeSelect}
+                    onContinue={handleContinue}
+                    selectedEmployees={selectedEmployees}
+                  />
+                </>
+              )}
+            </div>
+          )}
+          
+          {/* Mostrar la matriz de turnos */}
+          {showMatrix && (
+            <div className="matrix-section">
+              <div className="matrix-header">
+                <button 
+                  className="btn-link with-icon"
+                  onClick={handleBackToSelection}
+                >
+                  <svg 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                  </svg>
+                  Volver a selección
+                </button>
+              </div>
+              <ShiftMatrix 
+                employees={selectedEmployeesData}
+                selectedStore={selectedStore}
+                selectedDepartment={selectedDepartment}
+              />
+            </div>
           )}
         </div>
-      )}
-
-      {/* Mostrar la matriz de turnos cuando se presiona Continuar */}
-      {showMatrix && (
-        <div className="matrix-container">
-          <div className="matrix-header">
-            <button 
-              className="back-button" 
-              onClick={handleBackToSelection}
-            >
-              ← Volver a selección
-            </button>
-          </div>
-          <ShiftMatrix 
-            employees={selectedEmployeesData}
-            selectedStore={selectedStore}
-            selectedDepartment={selectedDepartment}
-          />
-        </div>
-      )}
-
+      </div>
+  
       {/* Dropdowns flotantes */}
       <Dropdown
         title="Tiendas"
@@ -217,8 +245,9 @@ const CreateShifts = () => {
         onSelect={handleStoreSelect}
         onClose={() => setShowStoresDropdown(false)}
         isOpen={showStoresDropdown}
+        searchable={true}
       />
-
+  
       <Dropdown
         title="Departamentos"
         items={departmentItems}

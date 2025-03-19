@@ -8,11 +8,11 @@ import EditEmployees from './pages/EditEmployees.jsx';
 import Login from './components/auth/LoginTur.jsx';
 import ReportSalary from './pages/ReportSalary.jsx';
 import TurnsReport from './pages/TurnsReport.jsx';
-import PermissionsPage from './pages/PermissionsPage.jsx';
+import UsersPage from './pages/UsersPage.jsx';
 import './styles/App.css';
 import HomePage from './pages/HomePage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx'
-  
+
 const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -96,7 +96,7 @@ const App = () => {
                     <Route path="/employees/edit" element={<EditEmployees />} />
                     <Route path="/reports/salary" element={<ReportSalary />} />
                     <Route path="/schedules/report_turns" element={<TurnsReport />} />
-                    <Route path="/permissons/access" element={<PermissionsPage />} />
+                    <Route path="/users/" element={<UsersPage />} />
                     
                     <Route path="/profile" element={<ProfilePage />} />
                   </Routes>
