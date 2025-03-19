@@ -10,7 +10,7 @@ import ReportSalary from './pages/ReportSalary.jsx';
 import TurnsReport from './pages/TurnsReport.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import './styles/App.css';
-import HomePage from './pages/HomePage.jsx';
+import HomePage from './pages/homepage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx'
 
 const App = () => {
