@@ -97,11 +97,8 @@ const UsersPage = () => {
     // Confirmar eliminación
     if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
       try {
-        // Esta función será implementada más adelante
-        // await api.delete(`/users/${userId}`);
-        console.log('Eliminar usuario:', userId);
-        // Recargar la lista
-        // loadUsers();
+        await api.delete(`/users/${userId}`);
+          loadUsers();
       } catch (error) {
         setError('Error al eliminar el usuario', error);
       }

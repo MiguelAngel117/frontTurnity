@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { api } from "../../utils/api";
 import LocationSelector from './LocationSelector';
 import './UserForm.css';
+import PropTypes from 'prop-types';
 
-const UserForm = () => {
+const UserForm = ({onClose}) => {
   const [formData, setFormData] = useState({
     number_document: '',
     alias_user: '',
@@ -230,6 +231,13 @@ const UserForm = () => {
             
             <div className="form-actions">
               <button 
+                type="button" 
+                className="cancel-button" 
+                onClick={onClose}
+              >
+                Volver
+              </button>
+              <button 
                 type="submit" 
                 className="submit-button" 
                 disabled={isLoading}
@@ -242,6 +250,9 @@ const UserForm = () => {
       </div>
     </div>
   );
+};
+UserForm.propTypes = {
+  onClose: PropTypes.func.isRequired,
 };
 
 export default UserForm;

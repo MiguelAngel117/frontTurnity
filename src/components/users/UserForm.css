@@ -133,3 +133,23 @@
       padding: 0 10px;
     }
   }
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  
+  .cancel-button {
+    background-color: #d6d1a5;
+    color: #333;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.3s;
+  }
+  .cancel-button:hover {
+    background-color: #dadb82;
+  }
