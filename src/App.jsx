@@ -11,13 +11,14 @@ import TurnsReport from './pages/TurnsReport.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import './styles/App.css';
 import HomePage from './pages/homepage.jsx';
-import ProfilePage from './pages/ProfilePage.jsx'
+import ProfilePage from './pages/ProfilePage.jsx';
 
 const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const [userRole, setUserRole] = useState('');
+ 
   // Verificación más robusta de la autenticación
   useEffect(() => {
     const checkAuth = async () => {
@@ -27,10 +28,12 @@ const App = () => {
         setIsLoading(false);
         return;
       }
-      
+     
       try {
-        // Opcional: Hacer una petición a un endpoint que valide el token
-        // Si no tienes este endpoint, simplemente establece la autenticación como verdadera
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        if (storedUser && storedUser.roles && storedUser.roles.length > 0) {
+          setUserRole(storedUser.roles[0]);
+        }
         setIsAuthenticated(true);
       } catch (error) {
         console.error('Error verificando autenticación:', error);
@@ -41,19 +44,49 @@ const App = () => {
         setIsLoading(false);
       }
     };
-    
+   
     checkAuth();
   }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-  
+ 
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsAuthenticated(false);
+  };
+
+  // Controlar acceso a rutas según rol
+  const hasAccess = (allowedRoles) => {
+    return allowedRoles.includes(userRole) || userRole === 'Administrador';
+  };
+
+  // Verificar si el usuario está autenticado y tiene acceso a una ruta
+  const renderProtectedRoute = (Component, allowedRoles) => {
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
+    
+    if (hasAccess(allowedRoles)) {
+      return (
+        <div className="app">
+          <Topbar
+            isSidebarOpen={isSidebarOpen}
+            toggleSidebar={toggleSidebar}
+            onLogout={handleLogout}
+          />
+          <Sidebar isOpen={isSidebarOpen} />
+          <div className="app-content">
+            <Component />
+          </div>
+        </div>
+      );
+    }
+    
+    return <Navigate to="/" replace />;
   };
 
   // Muestra loading mientras verifica la autenticación
@@ -64,42 +97,32 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        {/* Public route */}
-        <Route 
-          path="/login" 
+        {/* Ruta de login */}
+        <Route
+          path="/login"
           element={
             !isAuthenticated ? (
               <Login onLoginSuccess={() => setIsAuthenticated(true)} />
             ) : (
               <Navigate to="/" replace />
             )
-          } 
+          }
         />
         
-        {/* Protected routes - redirect to login if not authenticated */}
+        {/* Página principal */}
         <Route
-          path="/*"
+          path="/"
           element={
             isAuthenticated ? (
               <div className="app">
-                <Topbar 
-                  isSidebarOpen={isSidebarOpen} 
-                  toggleSidebar={toggleSidebar} 
+                <Topbar
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
                   onLogout={handleLogout}
                 />
                 <Sidebar isOpen={isSidebarOpen} />
                 <div className="app-content">
-                  <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/schedules/create" element={<CreateSchedules />} />
-                    <Route path="/schedules/reports" element={<ReportsSchedules />} />
-                    <Route path="/employees/edit" element={<EditEmployees />} />
-                    <Route path="/reports/salary" element={<ReportSalary />} />
-                    <Route path="/schedules/report_turns" element={<TurnsReport />} />
-                    <Route path="/users/" element={<UsersPage />} />
-                    
-                    <Route path="/profile" element={<ProfilePage />} />
-                  </Routes>
+                  <HomePage />
                 </div>
               </div>
             ) : (
@@ -107,6 +130,63 @@ const App = () => {
             )
           }
         />
+
+        {/* Rutas accesibles para todos los roles */}
+        <Route
+          path="/profile"
+          element={
+            isAuthenticated ? (
+              <div className="app">
+                <Topbar
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                  onLogout={handleLogout}
+                />
+                <Sidebar isOpen={isSidebarOpen} />
+                <div className="app-content">
+                  <ProfilePage />
+                </div>
+              </div>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        {/* Rutas compartidas por Administrador, Gerente y Jefe */}
+        <Route
+          path="/schedules/create"
+          element={renderProtectedRoute(CreateSchedules, ['Administrador', 'Gerente', 'Jefe'])}
+        />
+
+        <Route
+          path="/schedules/report_turns"
+          element={renderProtectedRoute(TurnsReport, ['Administrador', 'Gerente', 'Jefe'])}
+        />
+
+        {/* Rutas exclusivas para Administrador */}
+        <Route
+          path="/employees/edit"
+          element={renderProtectedRoute(EditEmployees, ['Administrador'])}
+        />
+
+        <Route
+          path="/reports/salary"
+          element={renderProtectedRoute(ReportSalary, ['Administrador'])}
+        />
+
+        <Route
+          path="/users"
+          element={renderProtectedRoute(UsersPage, ['Administrador'])}
+        />
+
+        <Route
+          path="/schedules/reports"
+          element={renderProtectedRoute(ReportsSchedules, ['Administrador'])}
+        />
+
+        {/* Redirección para rutas no encontradas */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
