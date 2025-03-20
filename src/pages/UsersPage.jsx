@@ -91,6 +91,9 @@ const UsersPage = () => {
     const userToEdit = users.find(user => user.number_document === userId);
     setSelectedUser(userToEdit);
     setShowUserForm(true);
+    if (showUserForm) {
+      return <UserForm user={selectedUser} onClose={closeUserForm} />;
+    }
   };
 
   const handleDeleteUser = async (userId) => {

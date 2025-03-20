@@ -3,8 +3,12 @@ import { api } from "../../utils/api";
 import LocationSelector from './LocationSelector';
 import './UserForm.css';
 import PropTypes from 'prop-types';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const UserForm = ({onClose}) => {
+const UserForm = ({ user, onClose }) => {
+  // Determinar si es modo edición o creación
+  const isEditMode = !!user;
+  
   const [formData, setFormData] = useState({
     number_document: '',
     alias_user: '',
@@ -12,25 +16,57 @@ const UserForm = ({onClose}) => {
     last_names: '',
     email: '',
     password: '',
-    status_user: 1,
+    status_user: true, // true = active (1), false = inactive (0)
     role_name: 'Jefe',
     stores: [],
     departments: []
   });
 
+  const [originalData, setOriginalData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [notification, setNotification] = useState(null);
   const [showLocationSelector, setShowLocationSelector] = useState(true); // Por defecto mostrar para Jefe
-  const [successMessage, setSuccessMessage] = useState('');
 
-  // Inicializa el showLocationSelector según el rol predeterminado
+  // Inicializa el formulario con los datos del usuario si estamos en modo edición
   useEffect(() => {
-    setShowLocationSelector(formData.role_name !== 'Administrador');
-  }, []);
+    if (isEditMode && user) {
+      const userData = {
+        number_document: user.number_document,
+        alias_user: user.alias_user,
+        first_names: user.first_names,
+        last_names: user.last_names,
+        email: user.email,
+        password: '', // No mostrar contraseña actual por seguridad
+        status_user: user.status_user === 1, // Convertir número a booleano
+        role_name: user.role_name,
+        stores: user.stores || [],
+        departments: user.departments || []
+      };
+      
+      setFormData(userData);
+      setOriginalData(userData); // Guardar los datos originales para comparar cambios
+      setShowLocationSelector(user.role_name !== 'Administrador');
+    } else {
+      // Inicializa el showLocationSelector según el rol predeterminado para modo creación
+      setShowLocationSelector(formData.role_name !== 'Administrador');
+    }
+  }, [user, isEditMode]);
+
+  const showNotification = (message, type) => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleStatusChange = (e) => {
+    const value = e.target.value === 'active';
+    setFormData({ ...formData, status_user: value });
   };
 
   const handleRoleChange = (e) => {
@@ -56,55 +92,110 @@ const UserForm = ({onClose}) => {
     setFormData({ ...formData, departments });
   };
 
+  // Función para calcular los cambios entre datos originales y actuales
+  const getChangedData = () => {
+    const changedData = {};
+    
+    // Solo compara campos que pueden ser editados
+    const fieldsToCompare = [
+      'alias_user', 'first_names', 'last_names', 'email', 
+      'role_name', 'status_user'
+    ];
+    
+    fieldsToCompare.forEach(field => {
+      if (formData[field] !== originalData[field]) {
+        if (field === 'status_user') {
+          changedData[field] = formData[field] ? 1 : 0; // Convertir booleano a número
+        } else {
+          changedData[field] = formData[field];
+        }
+      }
+    });
+    
+    // Añadir contraseña solo si se ha ingresado una nueva
+    if (formData.password) {
+      changedData.password = formData.password;
+    }
+    
+    // Añadir stores y departments según el rol, si han cambiado
+    if (formData.role_name === 'Gerente') {
+      // Verificar si los arreglos son diferentes
+      const storesChanged = JSON.stringify(formData.stores) !== JSON.stringify(originalData.stores);
+      if (storesChanged) {
+        changedData.role_name = formData.role_name;
+        changedData.stores = formData.stores;
+      }
+    } else if (formData.role_name === 'Jefe') {
+      const storesChanged = JSON.stringify(formData.stores) !== JSON.stringify(originalData.stores);
+      const departmentsChanged = JSON.stringify(formData.departments) !== JSON.stringify(originalData.departments);
+      if (storesChanged || departmentsChanged) {
+        changedData.role_name = formData.role_name;
+        changedData.stores = formData.stores;
+        changedData.departments = formData.departments;
+      }
+    }
+    
+    return changedData;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
-    setSuccessMessage('');
+    setNotification(null);
     
     try {
+      if (isEditMode) {
+        // Modo edición: enviar solo los campos que han cambiado
+        const changedData = getChangedData();
+        
+        // Si no hay cambios, no hacer nada
+        if (Object.keys(changedData).length === 0) {
+          showNotification('No se detectaron cambios', 'info');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Log para depuración - quitar en producción
+        console.log("Datos a actualizar:", JSON.stringify(changedData));
+        
+        await api.put(`/users/${formData.number_document}`, changedData);
+        showNotification('Usuario actualizado exitosamente', 'success');
+      } else {
+        // Modo creación: enviar todos los campos
         const dataToSend = { 
-            number_document: Number(formData.number_document),
-            alias_user: formData.alias_user,
-            first_names: formData.first_names,
-            last_names: formData.last_names,
-            email: formData.email,
-            password: formData.password,
-            role_name: formData.role_name,
-            status_user: 1 // Asegúrate de que sea un número entero
-          };
-          
-          // Añadir stores y departments según el rol
-          if (formData.role_name === 'Gerente') {
-            dataToSend.stores = formData.stores;
-          } else if (formData.role_name === 'Jefe') {
-            dataToSend.stores = formData.stores;
-            dataToSend.departments = formData.departments;
-          }
-          
-          // Log para depuración - quitar en producción
-          console.log("Datos a enviar:", JSON.stringify(dataToSend));
-          
-          await api.post('/users/', dataToSend);
-          setSuccessMessage('Usuario creado exitosamente');
+          number_document: Number(formData.number_document),
+          alias_user: formData.alias_user,
+          first_names: formData.first_names,
+          last_names: formData.last_names,
+          email: formData.email,
+          password: formData.password,
+          role_name: formData.role_name,
+          status_user: formData.status_user ? 1 : 0 // Convertir booleano a número
+        };
+        
+        // Añadir stores y departments según el rol
+        if (formData.role_name === 'Gerente') {
+          dataToSend.stores = formData.stores;
+        } else if (formData.role_name === 'Jefe') {
+          dataToSend.stores = formData.stores;
+          dataToSend.departments = formData.departments;
+        }
+        
+        // Log para depuración - quitar en producción
+        console.log("Datos a enviar:", JSON.stringify(dataToSend));
+        
+        await api.post('/users/', dataToSend);
+        showNotification('Usuario creado exitosamente', 'success');
+      }
       
-      // Resetear el formulario
-      setFormData({
-        number_document: '',
-        alias_user: '',
-        first_names: '',
-        last_names: '',
-        email: '',
-        password: '',
-        role_name: 'Jefe',
-        status_user: 1, // Mantener el status_user
-        stores: [],
-        departments: []
-      });
+      // Redireccionar después de un breve retraso para que el usuario vea la notificación
+      setTimeout(() => {
+        onClose(); // Redirige a la página de usuarios
+      }, 1500);
       
     } catch (error) {
-      console.error("Error creating user:", error);
-      setError(error.response?.data?.message || error.message || 'Error al crear el usuario');
+      console.error(`Error ${isEditMode ? 'actualizando' : 'creando'} usuario:`, error);
+      showNotification(error.response?.data?.message || error.message || `Error al ${isEditMode ? 'actualizar' : 'crear'} el usuario`, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -114,12 +205,9 @@ const UserForm = ({onClose}) => {
     <div className="turns-report-page">
       <div className="turns-report-container">
         <div className="report-card">
-          <h1 className="turns-report-title">Formulario de Usuario</h1>
+          <h1 className="turns-report-title">{isEditMode ? 'Editar Usuario' : 'Formulario de Usuario'}</h1>
           
           <form onSubmit={handleSubmit} className="user-form">
-            {error && <div className="error-message">{error}</div>}
-            {successMessage && <div className="success-message">{successMessage}</div>}
-            
             <div className="form-section">
               <h2>Información Personal</h2>
               
@@ -132,6 +220,7 @@ const UserForm = ({onClose}) => {
                   value={formData.number_document}
                   onChange={handleInputChange}
                   required
+                  disabled={isEditMode} // Deshabilitar en modo edición
                 />
               </div>
               
@@ -190,30 +279,48 @@ const UserForm = ({onClose}) => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="password">Contraseña</label>
+                <label htmlFor="password">
+                  {isEditMode ? 'Nueva Contraseña (dejar en blanco para mantener)' : 'Contraseña'}
+                </label>
                 <input
                   type="password"
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  required
+                  required={!isEditMode} // Solo es requerido en modo creación
                 />
               </div>
               
-              <div className="form-group">
-                <label htmlFor="role_name">Rol</label>
-                <select
-                  id="role_name"
-                  name="role_name"
-                  value={formData.role_name}
-                  onChange={handleRoleChange}
-                  required
-                >
-                  <option value="Administrador">Administrador</option>
-                  <option value="Gerente">Gerente</option>
-                  <option value="Jefe">Jefe</option>
-                </select>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="role_name">Rol</label>
+                  <select
+                    id="role_name"
+                    name="role_name"
+                    value={formData.role_name}
+                    onChange={handleRoleChange}
+                    required
+                  >
+                    <option value="Administrador">Administrador</option>
+                    <option value="Gerente">Gerente</option>
+                    <option value="Jefe">Jefe</option>
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="status_user">Estado Usuario</label>
+                  <select
+                    id="status_user"
+                    name="status_user"
+                    value={formData.status_user ? 'active' : 'inactive'}
+                    onChange={handleStatusChange}
+                    required
+                  >
+                    <option value="active">Activo</option>
+                    <option value="inactive">Inactivo</option>
+                  </select>
+                </div>
               </div>
             </div>
             
@@ -225,6 +332,8 @@ const UserForm = ({onClose}) => {
                   role={formData.role_name}
                   onStoresChange={handleStoresChange}
                   onDepartmentsChange={handleDepartmentsChange}
+                  initialStores={formData.stores}
+                  initialDepartments={formData.departments}
                 />
               </div>
             )}
@@ -242,16 +351,34 @@ const UserForm = ({onClose}) => {
                 className="submit-button" 
                 disabled={isLoading}
               >
-                {isLoading ? 'Creando...' : 'Crear Usuario'}
+                {isLoading ? 
+                  (isEditMode ? 'Actualizando...' : 'Creando...') : 
+                  (isEditMode ? 'Actualizar Usuario' : 'Crear Usuario')}
               </button>
             </div>
           </form>
         </div>
       </div>
+      
+      {/* Notification component */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div 
+            className={`notification ${notification.type}`}
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 100, opacity: 0 }}
+          >
+            {notification.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
+
 UserForm.propTypes = {
+  user: PropTypes.object, // No es obligatorio, será null para creación
   onClose: PropTypes.func.isRequired,
 };
 

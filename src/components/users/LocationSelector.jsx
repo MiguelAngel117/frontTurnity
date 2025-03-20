@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { api } from "../../utils/api";
 import './LocationSelector.css';
 
-const LocationSelector = ({ role, onStoresChange, onDepartmentsChange }) => {
+const LocationSelector = ({ role, onStoresChange, onDepartmentsChange, initialStores = [], initialDepartments = [] }) => {
   const [storesList, setStoresList] = useState([]);
   const [departmentsList, setDepartmentsList] = useState([]);
   const [selectedStores, setSelectedStores] = useState([]);
@@ -12,12 +12,24 @@ const LocationSelector = ({ role, onStoresChange, onDepartmentsChange }) => {
   const [error, setError] = useState(null);
   const [activeStore, setActiveStore] = useState(null);
 
+  // Cargar tiendas al iniciar
   useEffect(() => {
     fetchStores();
   }, []);
 
+  // Inicializar las selecciones con los valores iniciales recibidos por props
   useEffect(() => {
-    // Cuando el rol es Jefe y hay una tienda seleccionada, cargar sus departamentos
+    if (initialStores && initialStores.length > 0) {
+      setSelectedStores(initialStores);
+    }
+    
+    if (initialDepartments && initialDepartments.length > 0) {
+      setSelectedDepartments(initialDepartments);
+    }
+  }, [initialStores, initialDepartments]);
+
+  // Cuando cambia la tienda seleccionada y el rol es Jefe, cargar sus departamentos
+  useEffect(() => {
     if (role === 'Jefe' && selectedStores.length > 0) {
       fetchDepartments(selectedStores[0]);
       setActiveStore(selectedStores[0]);
@@ -76,7 +88,7 @@ const LocationSelector = ({ role, onStoresChange, onDepartmentsChange }) => {
   };
 
   // Cuando no hay tiendas para seleccionar
-    if (!storesList || storesList.length === 0 && !isLoading) {
+  if (!storesList || storesList.length === 0 && !isLoading) {
     return <div className="no-data">No hay tiendas disponibles.</div>;
   }
 
@@ -140,10 +152,13 @@ const LocationSelector = ({ role, onStoresChange, onDepartmentsChange }) => {
     </div>
   );
 };
+
 LocationSelector.propTypes = {
   role: PropTypes.string.isRequired,
   onStoresChange: PropTypes.func.isRequired,
   onDepartmentsChange: PropTypes.func.isRequired,
+  initialStores: PropTypes.array,
+  initialDepartments: PropTypes.array
 };
 
 export default LocationSelector;
