@@ -30,20 +30,30 @@ const CreateShifts = () => {
   useEffect(() => {
     const loadStores = async () => {
       if (userInfo) {
+        setLoading(true);
         try {
-            const data = await api.get(`/users/${userInfo.number_document}/stores`);
+          const data = await api.get(`/users/${userInfo.number_document}/stores`);
           
           // Filtrar tiendas según los permisos del usuario si es necesario
+          let filteredStores = [];
           if (userInfo.stores && userInfo.stores.length > 0) {
-            const filteredStores = data.filter(store => 
+            filteredStores = data.filter(store => 
               userInfo.stores.includes(store.id_store)
             );
-            setStores(filteredStores);
           } else {
-            setStores(data);
+            filteredStores = data;
+          }
+          
+          setStores(filteredStores);
+          
+          // Seleccionar automáticamente si solo hay una tienda
+          if (filteredStores.length === 1) {
+            handleStoreSelect(filteredStores[0]);
           }
         } catch (error) {
           console.error("Error loading stores:", error);
+        } finally {
+          setLoading(false);
         }
       }
     };
@@ -60,10 +70,18 @@ const CreateShifts = () => {
     setShowMatrix(false);
 
     try {
+      setLoading(true);
       const data = await api.get(`/users/${userInfo.number_document}/stores/${store.id_store}/departments`);
       setDepartments(data);
+      
+      // Seleccionar automáticamente si solo hay un departamento
+      if (data.length === 1) {
+        handleDepartmentSelect(data[0]);
+      }
     } catch (error) {
       console.error("Error fetching departments:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
