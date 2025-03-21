@@ -15,6 +15,8 @@ const UsersPage = () => {
   const [sortOrder, setSortOrder] = useState('asc');
   const [showUserForm, setShowUserForm] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(5);
 
   // Roles disponibles en el sistema
   const roles = ['Administrador', 'Gerente', 'Jefe'];
@@ -82,6 +84,11 @@ const UsersPage = () => {
     setFilteredUsers(result);
   }, [searchTerm, roleFilter, statusFilter, sortOrder, users]);
 
+  useEffect(() => {
+    // Cuando cambien los filtros, volver a la primera página
+    setCurrentPage(1);
+  }, [searchTerm, roleFilter, statusFilter]);
+
   const handleCreateUser = () => {
     setSelectedUser(null);
     setShowUserForm(true);
@@ -107,6 +114,14 @@ const UsersPage = () => {
       }
     }
   };
+
+  const getCurrentPageUsers = () => {
+    const indexOfLastUser = currentPage * usersPerPage;
+    const indexOfFirstUser = indexOfLastUser - usersPerPage;
+    return filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  };
+  
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const getStatusLabel = (status) => {
     return status === 1 ? 'Activo' : 'Inactivo';
@@ -220,6 +235,7 @@ const UsersPage = () => {
           {!loading && !error && (
             <>
               {filteredUsers.length > 0 ? (
+              <>
                 <div className="table-container">
                   <table className="users-table">
                     <thead>
@@ -234,7 +250,7 @@ const UsersPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredUsers.map((user) => (
+                      {getCurrentPageUsers().map((user) => (
                         <tr key={user.number_document}>
                           <td>{user.alias_user}</td>
                           <td>{`${user.first_names} ${user.last_names}`}</td>
@@ -271,6 +287,30 @@ const UsersPage = () => {
                     </tbody>
                   </table>
                 </div>
+                
+                {/* Controles de paginación */}
+                <div className="pagination-controls">
+                  <button 
+                    onClick={() => paginate(currentPage - 1)} 
+                    disabled={currentPage === 1}
+                    className="pagination-button"
+                  >
+                    Anterior
+                  </button>
+                  
+                  <div className="pagination-info">
+                    Página {currentPage} de {Math.ceil(filteredUsers.length / usersPerPage)}
+                  </div>
+                  
+                  <button 
+                    onClick={() => paginate(currentPage + 1)} 
+                    disabled={currentPage >= Math.ceil(filteredUsers.length / usersPerPage)}
+                    className="pagination-button"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </>
               ) : (
                 <div className="no-data-message">
                   <p>No se encontraron usuarios con los criterios de búsqueda.</p>

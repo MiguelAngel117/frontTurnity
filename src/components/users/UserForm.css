@@ -129,25 +129,27 @@ input:focus, select:focus {
   padding: 1rem 1.5rem;
   border-radius: 8px;
   font-weight: 500;
-  color: white;
+  color: var(--white);
   z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
   min-width: 250px;
   max-width: 400px;
 }
 
 .user-form-notification.success {
-  background-color: #00875a; /* Verde más oscuro y vibrante */
+  background-color: var(--success-color);
 }
 
 .user-form-notification.error {
-  background-color: #de350b; /* Rojo más oscuro y vibrante */
+  background-color: var(--error-color);
 }
 
 @media (max-width: 768px) {
   .user-form-notification {
-    right: 1rem;
+    min-width: auto;
+    width: calc(100% - 2rem);
     bottom: 1rem;
-    max-width: calc(100% - 2rem);
+    right: 1rem;
+    font-size: 0.9rem;
   }
 }

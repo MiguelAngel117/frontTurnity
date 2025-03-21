@@ -1,83 +1,248 @@
-/* src/components/layout/Sidebar.css */
-
 .sidebar {
-  width: 250px;
-  height: calc(100vh - 60px); /* Ajusta la altura para excluir el Topbar */
-  background-color: #0D47A1;
+  height: calc(100vh - 60px);
+  background: #3498db; /* Azul más claro y moderno */
   color: white;
   position: fixed;
-  top: 60px; /* Espacio reservado para el Topbar */
+  top: 60px;
   left: 0;
-  transition: width 0.3s ease;
-  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar.open {
+  width: 240px;
 }
 
 .sidebar.closed {
-  width: 50px; /* Ancho cuando está cerrado */
+  width: 60px;
 }
 
-.sidebar nav ul {
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 15px 0;
+}
+
+.menu-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.sidebar nav ul li {
-  padding: 10px 20px;
+.menu-item {
+  margin-bottom: 5px;
 }
 
-.sidebar nav ul li.menu-item {
+.menu-item-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin: 0 8px;
+  position: relative;
+  transition: all 0.2s ease;
+  height: 42px;
+}
+
+.menu-item-header:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu-item-header.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}
+
+.menu-icon {
+  font-size: 18px;
+  min-width: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-title {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+}
+
+.menu-arrow {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.menu-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.submenu {
+  list-style: none;
+  padding: 5px 0;
+  margin: 0 8px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out, padding 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+}
+
+.submenu.expanded {
+  max-height: 200px;
+  padding: 5px 0;
+}
+
+.submenu-item {
+  padding: 0;
+}
+
+.submenu-item a {
+  display: block;
+  padding: 8px 15px 8px 48px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.2s;
+  border-radius: 4px;
+  margin: 2px 5px;
+}
+
+.submenu-item a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.submenu-item a.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-weight: bold;
+}
+
+/* Estilos para cuando el sidebar está cerrado */
+.sidebar.closed .menu-item-header {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.sidebar.closed .menu-arrow,
+.sidebar.closed .submenu {
+  display: none;
+}
+
+/* Para hacer que los iconos sean clicables cuando el menú está cerrado */
+.sidebar.closed .menu-item .menu-item-header,
+.sidebar.closed .menu-item a.menu-item-header {
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Animación de hover para elementos del menú */
+.menu-item-header {
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-item-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  transition: width 0.3s ease;
+}
+
+.menu-item-header:hover::after,
+.menu-item-header.active::after {
+  width: 100%;
+}
+
+/* Estilos para NavLink */
+.menu-item-header a {
+  color: white;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Estilo para la barra de desplazamiento */
+.sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* SidebarTurn.css */
+/* Nuevos estilos para el hover y menú expandible en modo comprimido */
+.sidebar.closed .submenu {
+  display: block;
+  position: absolute;
+  left: 60px;
+  top: 0;
+  width: 180px;
+  background-color: #2980b9;
+  border-radius: 0 6px 6px 0;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.sidebar.closed .menu-item {
   position: relative;
 }
 
-.sidebar nav ul li.menu-item .menu-title {
-  font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 5px;
-  display: block;
-  transition: opacity 0.3s ease;
-  cursor: pointer;
+/* Separador para el menú de inicio */
+.menu-separator {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.2);
+  margin: 8px 16px;
 }
-
-.sidebar nav ul li .submenu {
-  padding-left: 20px;
-  display: none; /* Oculta las subopciones por defecto */
-}
-
-.sidebar nav ul li .submenu.hidden {
-  display: none; /* Asegura que las subopciones se oculten cuando el menú está cerrado */
-}
-
-.sidebar nav ul li a {
-  text-decoration: none;
+/* Ajustes para el menú de inicio */
+.menu-item:first-child .menu-item-header {
   color: white;
-  display: block;
+  transition: background-color 0.2s;
 }
 
-.sidebar nav ul li a.active {
-  font-weight: bold;
+.menu-item:first-child .menu-item-header:hover {
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
-/* Estilo para ocultar texto y subtítulos cuando el menú está cerrado */
-.sidebar .hidden {
-  display: none; /* Oculta el texto cuando el menú está cerrado */
+/* Modificaciones para soporte de hover en modo comprimido */
+.sidebar.closed .submenu.expanded {
+  max-height: none;
 }
 
-.toggle-button {
-  background-color: #495057;
-  color: white;
-  border: none;
-  width: 100%;
-  padding: 10px;
+/* Aseguramos que el submenú tenga un ancho fijo y se posicione correctamente */
+.sidebar.closed .submenu-item a {
+  white-space: nowrap;
+  padding: 8px 15px;
+}
+
+/* Hacemos que el cursor sea pointer para mejor UX */
+.menu-icon {
   cursor: pointer;
-  text-align: center;
-  font-size: 20px;
-}
-
-.toggle-button:hover {
-  background-color: #6c757d;
-}
-
-.sidebar.open .submenu {
-  display: block;
 }

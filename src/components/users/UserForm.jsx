@@ -150,7 +150,7 @@ const UserForm = ({ user, onClose }) => {
         
         // Si no hay cambios, no hacer nada
         if (Object.keys(changedData).length === 0) {
-          showNotification('No se detectaron cambios', 'info');
+          showNotification('No se detectaron cambios', 'error');
           setIsLoading(false);
           return;
         }
@@ -158,8 +158,15 @@ const UserForm = ({ user, onClose }) => {
         // Log para depuración - quitar en producción
         console.log("Datos a actualizar:", JSON.stringify(changedData));
         
-        await api.put(`/users/${formData.number_document}`, changedData);
-        showNotification('Usuario actualizado exitosamente', 'success');
+        const response = await api.put(`/users/${formData.number_document}`, changedData);
+        if(response.status=== 209){
+          showNotification(response.message, 'error')
+        }else{
+          showNotification('Usuario actualizado exitosamente', 'success');
+          setTimeout(() => {
+            onClose(); // Redirige a la página de usuarios
+          }, 1500);
+        }
       } else {
         // Modo creación: enviar todos los campos
         const dataToSend = { 
@@ -184,16 +191,22 @@ const UserForm = ({ user, onClose }) => {
         // Log para depuración - quitar en producción
         console.log("Datos a enviar:", JSON.stringify(dataToSend));
         
-        await api.post('/users/', dataToSend);
-        showNotification('Usuario creado exitosamente', 'success');
+        const response = await api.post('/users/', dataToSend);
+        
+        if(response.status=== 209){
+          showNotification(response.message, 'error')
+        }else{
+          showNotification('Usuario creado exitosamente', 'success');
+          setTimeout(() => {
+            onClose(); // Redirige a la página de usuarios
+          }, 1500);
+        }
+        
       }
       
-      // Redireccionar después de un breve retraso para que el usuario vea la notificación
-      setTimeout(() => {
-        onClose(); // Redirige a la página de usuarios
-      }, 1500);
       
     } catch (error) {
+      console.log("Error", error);
       console.error(`Error ${isEditMode ? 'actualizando' : 'creando'} usuario:`, error);
       showNotification(error.response?.data?.message || error.message || `Error al ${isEditMode ? 'actualizar' : 'crear'} el usuario`, 'error');
     } finally {
@@ -286,7 +299,6 @@ const UserForm = ({ user, onClose }) => {
                   type="password"
                   id="password"
                   name="password"
-                  value={formData.password}
                   onChange={handleInputChange}
                   required={!isEditMode} // Solo es requerido en modo creación
                 />
