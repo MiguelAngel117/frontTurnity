@@ -1,0 +1,241 @@
+.employees-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .employees-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+  }
+  
+  .employees-title {
+    font-size: 24px;
+    margin-bottom: 24px;
+    color: #172b4d;
+  }
+  
+  /* Actions and filters container */
+  .actions-filters-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  /* Filters section */
+  .filters-section {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+  
+  /* Search input */
+  .search-input-container {
+    position: relative;
+    min-width: 240px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+  }
+  
+  .select-input {
+    height: 40px;
+    padding: 8px 16px 8px 36px;
+    border: 1px solid #e0e4ea;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 14px;
+  }
+  
+  /* Select container */
+  .select-container {
+    position: relative;
+    min-width: 220px;
+  }
+  
+  .select-container .select-input {
+    appearance: none;
+    padding-right: 28px;
+  }
+  
+  .select-arrow {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #666;
+  }
+  
+  /* Sort button */
+  .sort-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e0e4ea;
+    border-radius: 4px;
+    background: #f9fafc;
+    cursor: pointer;
+    font-size: 14px;
+    color: #172b4d;
+  }
+  
+  .sort-button:hover {
+    background: #f0f2f5;
+  }
+  
+  /* Table styles */
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .employees-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  
+  .employees-table th {
+    padding: 12px 16px;
+    text-align: left;
+    color: #172b4d;
+    background-color: #f9fafc;
+    border-bottom: 2px solid #e0e4ea;
+    font-weight: 600;
+  }
+  
+  .employees-table th:nth-child(1) { width: 12%; }  /* Document number */
+  .employees-table th:nth-child(2) { width: 20%; }  /* Full name */
+  .employees-table th:nth-child(3) { width: 8%; }   /* Working day */
+  .employees-table th:nth-child(4) { width: 20%; }  /* Store */
+  .employees-table th:nth-child(5) { width: 15%; }  /* Department */
+  .employees-table th:nth-child(6) { width: 15%; }  /* Position */
+  .employees-table th:nth-child(7) { width: 10%; }  /* Actions */
+  
+  .employees-table td {
+    padding: 12px 16px;
+    color: #3c4758;
+    border-bottom: 1px solid #f0f2f5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .employees-table th:last-child {
+    text-align: center;
+  }
+  
+  /* Action buttons */
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .action-button {
+    border: none;
+    background: #f0f2f5;
+    border-radius: 4px;
+    padding: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+  }
+  
+  .action-button.edit {
+    color: #3498db;
+  }
+  
+  .action-button.delete {
+    color: #ff4d4d;
+  }
+  
+  .action-button:hover {
+    background: #e0e4ea;
+  }
+  
+  /* Loading and error states */
+  .loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0;
+  }
+  
+  .spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid #00cc99;
+    width: 32px;
+    height: 32px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .error-message {
+    background-color: #fff1f0;
+    border: 1px solid #ffccc7;
+    color: #cf1322;
+    padding: 16px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+  
+  .no-data-message {
+    text-align: center;
+    padding: 40px 0;
+    color: #6b778c;
+    font-style: italic;
+  }
+  
+  /* Pagination styles */
+  .pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 16px;
+  }
+  
+  .pagination-button {
+    background-color: #f0f2f5;
+    border: 1px solid #e0e4ea;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    color: #172b4d;
+    font-size: 14px;
+    transition: background-color 0.2s;
+  }
+  
+  .pagination-button:hover:not(:disabled) {
+    background-color: #e0e4ea;
+  }
+  
+  .pagination-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .pagination-info {
+    color: #6b778c;
+    font-size: 14px;
+  }
