@@ -84,8 +84,8 @@ input:focus, select:focus {
   gap: 10px;
 }
 
-.cancel-button {
-  background-color: #d6d1a5;
+.back-button {
+  background-color: #b5b5ae;
   color: #333;
   padding: 10px 16px;
   border: none;
@@ -96,8 +96,8 @@ input:focus, select:focus {
   transition: background-color 0.3s;
 }
 
-.cancel-button:hover {
-  background-color: #dadb82;
+.back-button:hover {
+  background-color: #7f7f7f;
 }
 
 .submit-button {

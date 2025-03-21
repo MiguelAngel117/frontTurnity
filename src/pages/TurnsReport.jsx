@@ -117,7 +117,6 @@ const TurnsReport = () => {
       
       // Formatear el mes como string con cero a la izquierda si es necesario
       const formattedMonth = parseInt(selectedMonth) < 10 ? `0${selectedMonth}` : `${selectedMonth}`;
-      
       const response = await api.post('/employeeshift/by-employee-list', {
         store: selectedStore.id_store,
         department: selectedDepartment.id_department,

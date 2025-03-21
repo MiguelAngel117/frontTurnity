@@ -1,0 +1,169 @@
+/* ErrorPage.css */
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .error-content {
+    text-align: center;
+    max-width: 600px;
+    background-color: white;
+    border-radius: 10px;
+    padding: 40px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    margin-top: 30px;
+    z-index: 10;
+  }
+  
+  .error-content h1 {
+    color: #e74c3c;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .error-content p {
+    color: #555;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+  }
+  
+  .error-message {
+    color: #777;
+    font-size: 1rem;
+    margin-bottom: 30px;
+  }
+  
+  .home-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .home-button:hover {
+    background-color: #2980b9;
+  }
+  
+  /* Estilos para los engranajes */
+  .gears-container {
+    position: relative;
+    height: 150px;
+    width: 300px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .gear {
+    position: absolute;
+    background-color: #e74c3c;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .gear:before {
+    content: '';
+    position: absolute;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+  }
+  
+  .gear:after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #e74c3c;
+    border-radius: 50%;
+    background-image: 
+      repeating-linear-gradient(0deg, transparent, transparent 10%, #f8f9fa 10%, #f8f9fa 15%),
+      repeating-linear-gradient(45deg, transparent, transparent 10%, #f8f9fa 10%, #f8f9fa 15%),
+      repeating-linear-gradient(90deg, transparent, transparent 10%, #f8f9fa 10%, #f8f9fa 15%),
+      repeating-linear-gradient(135deg, transparent, transparent 10%, #f8f9fa 10%, #f8f9fa 15%),
+      repeating-linear-gradient(180deg, transparent, transparent 10%, #f8f9fa 10%, #f8f9fa 15%),
+      repeating-linear-gradient(225deg, transparent, transparent 10%, #f8f9fa 10%, #f8f9fa 15%),
+      repeating-linear-gradient(270deg, transparent, transparent 10%, #f8f9fa 10%, #f8f9fa 15%),
+      repeating-linear-gradient(315deg, transparent, transparent 10%, #f8f9fa 10%, #f8f9fa 15%);
+    background-size: 50% 50%;
+    animation: spin 8s linear infinite;
+  }
+  
+  .gear-large {
+    width: 100px;
+    height: 100px;
+    left: 50px;
+    top: 20px;
+  }
+  
+  .gear-large:before {
+    width: 40%;
+    height: 40%;
+  }
+  
+  .gear-medium {
+    width: 70px;
+    height: 70px;
+    right: 60px;
+    top: 50px;
+    z-index: 1;
+  }
+  
+  .gear-medium:before {
+    width: 40%;
+    height: 40%;
+  }
+  
+  .gear-medium:after {
+    animation: spin 8s linear infinite reverse;
+  }
+  
+  .gear-small {
+    width: 40px;
+    height: 40px;
+    left: 130px;
+    top: 30px;
+  }
+  
+  .gear-small:before {
+    width: 40%;
+    height: 40%;
+  }
+  
+  .gear-small:after {
+    animation: spin 5s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .error-content {
+      padding: 30px;
+    }
+    
+    .error-content h1 {
+      font-size: 2rem;
+    }
+    
+    .gears-container {
+      transform: scale(0.8);
+    }
+  }

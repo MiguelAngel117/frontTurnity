@@ -1,5 +1,7 @@
   import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
   import { useState, useEffect } from 'react';
+  import { ErrorBoundary } from 'react-error-boundary';
+  import ErrorPage from './pages/ErrorPage.jsx';
   import Sidebar from './components/layout/SideBarTurn.jsx';
   import Topbar from './components/layout/TopBar.jsx';
   import CreateSchedules from './pages/CreateShifts.jsx';
@@ -95,100 +97,102 @@
     }
 
     return (
-      <Router>
-        <Routes>
-          {/* Ruta de login */}
-          <Route
-            path="/login"
-            element={
-              !isAuthenticated ? (
-                <Login onLoginSuccess={() => setIsAuthenticated(true)} />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            }
-          />
-          
-          {/* Página principal */}
-          <Route
-            path="/"
-            element={
-              isAuthenticated ? (
-                <div className="app">
-                  <Topbar
-                    isSidebarOpen={isSidebarOpen}
-                    toggleSidebar={toggleSidebar}
-                    onLogout={handleLogout}
-                  />
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="app-content">
-                    <HomePage />
+      <ErrorBoundary FallbackComponent={ErrorPage}>
+        <Router>
+          <Routes>
+            {/* Ruta de login */}
+            <Route
+              path="/login"
+              element={
+                !isAuthenticated ? (
+                  <Login onLoginSuccess={() => setIsAuthenticated(true)} />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
+            />
+            
+            {/* Página principal */}
+            <Route
+              path="/"
+              element={
+                isAuthenticated ? (
+                  <div className="app">
+                    <Topbar
+                      isSidebarOpen={isSidebarOpen}
+                      toggleSidebar={toggleSidebar}
+                      onLogout={handleLogout}
+                    />
+                    <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+                    <div className="app-content">
+                      <HomePage />
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
 
-          {/* Rutas accesibles para todos los roles */}
-          <Route
-            path="/profile"
-            element={
-              isAuthenticated ? (
-                <div className="app">
-                  <Topbar
-                    isSidebarOpen={isSidebarOpen}
-                    toggleSidebar={toggleSidebar}
-                    onLogout={handleLogout}
-                  />
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="app-content">
-                    <ProfilePage />
+            {/* Rutas accesibles para todos los roles */}
+            <Route
+              path="/profile"
+              element={
+                isAuthenticated ? (
+                  <div className="app">
+                    <Topbar
+                      isSidebarOpen={isSidebarOpen}
+                      toggleSidebar={toggleSidebar}
+                      onLogout={handleLogout}
+                    />
+                    <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+                    <div className="app-content">
+                      <ProfilePage />
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
 
-          {/* Rutas compartidas por Administrador, Gerente y Jefe */}
-          <Route
-            path="/schedules/create"
-            element={renderProtectedRoute(CreateSchedules, ['Administrador', 'Gerente', 'Jefe'])}
-          />
+            {/* Rutas compartidas por Administrador, Gerente y Jefe */}
+            <Route
+              path="/schedules/create"
+              element={renderProtectedRoute(CreateSchedules, ['Administrador', 'Gerente', 'Jefe'])}
+            />
 
-          <Route
-            path="/schedules/report_turns"
-            element={renderProtectedRoute(TurnsReport, ['Administrador', 'Gerente', 'Jefe'])}
-          />
+            <Route
+              path="/schedules/report_turns"
+              element={renderProtectedRoute(TurnsReport, ['Administrador', 'Gerente', 'Jefe'])}
+            />
 
-          {/* Rutas exclusivas para Administrador */}
-          <Route
-            path="/employees/edit"
-            element={renderProtectedRoute(EditEmployees, ['Administrador'])}
-          />
+            {/* Rutas exclusivas para Administrador */}
+            <Route
+              path="/employees/edit"
+              element={renderProtectedRoute(EditEmployees, ['Administrador'])}
+            />
 
-          <Route
-            path="/reports/salary"
-            element={renderProtectedRoute(ReportSalary, ['Administrador'])}
-          />
+            <Route
+              path="/reports/salary"
+              element={renderProtectedRoute(ReportSalary, ['Administrador'])}
+            />
 
-          <Route
-            path="/users"
-            element={renderProtectedRoute(UsersPage, ['Administrador'])}
-          />
+            <Route
+              path="/users"
+              element={renderProtectedRoute(UsersPage, ['Administrador'])}
+            />
 
-          <Route
-            path="/schedules/reports"
-            element={renderProtectedRoute(ReportsSchedules, ['Administrador'])}
-          />
+            <Route
+              path="/schedules/reports"
+              element={renderProtectedRoute(ReportsSchedules, ['Administrador'])}
+            />
 
-          {/* Redirección para rutas no encontradas */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
+            {/* Redirección para rutas no encontradas */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </ErrorBoundary>
     );
   };
 

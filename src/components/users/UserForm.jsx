@@ -353,7 +353,7 @@ const UserForm = ({ user, onClose }) => {
             <div className="form-actions">
               <button 
                 type="button" 
-                className="cancel-button" 
+                className="back-button" 
                 onClick={onClose}
               >
                 Volver
