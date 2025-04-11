@@ -107,7 +107,7 @@ const EditEmployees = () => {
             <div className="search-input-container">
               <input
                 type="text"
-                placeholder="Search by name or document..."
+                placeholder="Buscar por nombre o documento"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="select-input"
@@ -122,7 +122,7 @@ const EditEmployees = () => {
                 onChange={(e) => setStoreFilter(e.target.value)}
                 className="select-input"
               >
-                <option value="">All stores</option>
+                <option value="">Todas las tiendas</option>
                 {stores.map(store => (
                   <option key={store} value={store}>{store}</option>
                 ))}

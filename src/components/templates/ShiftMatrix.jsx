@@ -670,19 +670,19 @@ const handleSaveShift = (shiftData) => {
           
           <div className="create-shifts-section">
             {createSuccess && (
-              <div className="success-message">
+              <div className="success-message-r">
                 ¡Turnos creados exitosamente!
               </div>
             )}
 
             {createPass && (
-              <div className="pass-message">
+              <div className="pass-message-r">
                 No hay Modificaciones en los turnos
               </div>
             )}
             
             {createError && (
-              <div className="error-message">
+              <div className="error-message-r">
                 Error: {createError}
               </div>
             )}

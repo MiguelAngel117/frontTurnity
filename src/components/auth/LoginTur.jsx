@@ -120,15 +120,65 @@ const Login = ({ onLoginSuccess }) => {
       const data = await api.public.post('/users/login/', payload);
       
       if (data && data.token) {
+        // Registramos para debugging
+        console.log('Datos recibidos del login:', data);
+        
         // Store token in localStorage
         localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
         
-        showNotification('Inicio de sesión exitoso', 'success');
-        
-        // Llama a onLoginSuccess para actualizar el estado en App.jsx
-        if (onLoginSuccess) {
-          onLoginSuccess();
+        // Asegurarnos de que el objeto user tiene la información completa
+        if (data.user) {
+          // Verificando si tiene la propiedad roles
+          if (!data.user.roles || !Array.isArray(data.user.roles) || data.user.roles.length === 0) {
+            console.warn('El objeto usuario no tiene roles definidos correctamente', data.user);
+            // Si no tiene roles, intentamos asignar uno temporal basado en información disponible
+            if (data.user.isAdmin) {
+              data.user.roles = ['Administrador'];
+            } else {
+              data.user.roles = ['Usuario'];
+            }
+          }
+          
+          localStorage.setItem('user', JSON.stringify(data.user));
+          showNotification('Inicio de sesión exitoso', 'success');
+          
+          // Llama a onLoginSuccess PASANDO EL USUARIO para actualizar el estado en App.jsx
+          if (onLoginSuccess) {
+            console.log('Llamando onLoginSuccess con usuario:', data.user);
+            onLoginSuccess(data.user);  // CAMBIO CLAVE: Pasar el usuario al callback
+          }
+        } else {
+          // Si no hay datos de usuario, intentamos obtenerlos
+          try {
+            const userInfo = await api.get('/users/me');
+            console.log('Datos de usuario obtenidos separadamente:', userInfo);
+            
+            // Verificando si tiene la propiedad roles
+            if (!userInfo.roles || !Array.isArray(userInfo.roles) || userInfo.roles.length === 0) {
+              console.warn('El objeto usuario no tiene roles definidos correctamente', userInfo);
+              // Si no tiene roles, intentamos asignar uno temporal
+              if (userInfo.isAdmin) {
+                userInfo.roles = ['Administrador'];
+              } else {
+                userInfo.roles = ['Usuario'];
+              }
+            }
+            
+            localStorage.setItem('user', JSON.stringify(userInfo));
+            showNotification('Inicio de sesión exitoso', 'success');
+            
+            // Llamar a onLoginSuccess PASANDO EL USUARIO
+            if (onLoginSuccess) {
+              console.log('Llamando onLoginSuccess con usuario:', userInfo);
+              onLoginSuccess(userInfo);  // CAMBIO CLAVE: Pasar el usuario al callback
+            }
+          } catch (userError) {
+            console.error('Error obteniendo información del usuario:', userError);
+            // Si no podemos obtener información adicional, continuamos con token solamente
+            localStorage.setItem('user', JSON.stringify({ roles: ['Usuario'] }));
+            showNotification('Inicio de sesión exitoso (información limitada)', 'success');
+            onLoginSuccess({ roles: ['Usuario'] });
+          }
         }
         
         // Redirect to home page after a brief delay

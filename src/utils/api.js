@@ -27,7 +27,6 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
     
     if (!response.ok) {
       if (response.status === 401) {
-        // Token expirado o inválido
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
@@ -38,13 +37,10 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
         throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
       }
     }
-    
-    // Para endpoints que no devuelven JSON
     if (options.rawResponse) {
       return response;
     }
     
-    // Devolver los datos JSON
     return await response.json();
   } catch (error) {
     console.error(`API request error for ${endpoint}:`, error);
@@ -52,7 +48,6 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
   }
 };
 
-// Métodos específicos para operaciones CRUD comunes
 export const api = {
   get: (endpoint, options = {}) => {
     return fetchWithAuth(endpoint, { ...options, method: 'GET' });
@@ -77,8 +72,7 @@ export const api = {
   delete: (endpoint, options = {}) => {
     return fetchWithAuth(endpoint, { ...options, method: 'DELETE' });
   },
-  
-  // Para rutas públicas que no requieren autenticación
+
   public: {
     get: (endpoint, options = {}) => {
       return fetchWithAuth(endpoint, { ...options, method: 'GET', skipAuth: true });
